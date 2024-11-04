@@ -1,0 +1,154 @@
+syntax = "proto3";
+
+package Cart.v1;
+import "google/protobuf/timestamp.proto";
+
+service CartService {
+    //Core Cart Service
+        rpc CreateCart(CreateCartRequest) returns (CartResponse);
+        rpc GetCart(GetCartRequest) returns (CartResponse);
+        rpc UpdateCart(UpdateCartRequest) returns  (CartResponse);
+        rpc DeleteCart(DeleteCartRequest) returns (Empty);
+    //Cart item Service
+        rpc AddCartItem(AddItemRequest) returns (CartResponse);
+        rpc RemoveCartItem(RemoveItemRequest) returns (CartResponse);
+        rpc AddQuantity(QuantityRequest) returns (CartResponse);
+        rpc RemoveQuantity(QuantityRequest) returns (CartResponse);
+
+        rpc ValidateCoupon (ValidCartResquest) returns (ValidCouponResponse);
+
+}
+
+service CouponService{
+    //COre Coupon service
+    rpc CreateCoupon (CreateCouponRequest) returns (CouponResponse);
+    rpc GetCoupon (GetCouponRequest) returns (CouponResponse);
+    rpc UpdateCoupon (UpdateCouponRequest) returns (CouponResponse);
+    rpc DeleteCoupon (DeleteCouponRequest) returns (Empty);
+    
+}
+
+message Coupon
+{
+    string StoreUuid = 1;
+    string CouponCode = 2;
+    optional google.protobuf.Timestamp VaildFrom  = 3;//It will send data in seconds after Unix Epoch 
+    optional google.protobuf.Timestamp VaildTo = 4;
+    optional float Discount = 5;
+    optional float MinSpend = 6;
+}
+
+message ValidCartResquest{
+    CartIdentifier Cart = 1;
+    string StoreUuid = 2;
+    string CouponCode = 3;
+}
+
+message CreateCouponRequest{
+    Coupon Coupon =1;
+}
+
+message GetCouponRequest{
+    string StoreUuid = 1;
+    string CouponCode = 2;
+}
+
+message UpdateCouponRequest{
+    string StoreUuid = 1;
+    string CouponCode = 2;
+    Coupon Coupon = 3;
+}
+
+message DeleteCouponRequest{
+    string StoreUuid = 1;
+    string CouponCode = 2;
+}
+
+message CouponResponse {
+    Coupon Coupon = 1;
+}
+message ValidCouponResponse{
+    CartResponse Cart = 1;
+    bool valid = 2;
+    optional string ValidationMessage = 3;
+}
+enum OrderType {
+    Unspecified = 0;
+    DineIn = 1;
+    TakeAway = 2;
+    DriveThru = 3;
+}
+
+message CartItem{
+    string ProductUuid = 1;
+    float Price = 2;
+    int32 Quantity = 3;
+    float Discount = 4;
+    float SubTotal = 5;
+}
+
+message CreateCartRequest {
+    CartIdentifier Cart = 1; 
+        OrderType OrderType = 3;
+        string TableNo = 4;
+        optional string VehicleNo = 5;
+        optional string VehicleDescription = 6;
+        string CouponName = 7;
+}
+
+message CartResponse
+{
+    string StoreUuid = 1;
+    string UserPhoneNo = 2;
+    optional string OrderType = 3;
+    optional string TableNo = 4;
+    optional string VehicleNo = 5;
+    optional string VehicleDescription = 6;
+    optional string CouponName = 7;
+    repeated CartItem Items = 8;
+    optional float TotalAmount = 9;
+}
+
+message CartIdentifier{
+    string StoreUuid = 1;
+    string UserPhoneNo = 2;
+}
+message GetCartRequest{
+    CartIdentifier Cart = 1;
+}
+message UpdateCartRequest{
+
+    CartIdentifier Cart = 1; 
+    OrderType OrderType = 3;
+    optional string TableNo = 4;
+    optional string VehicleNo = 5;
+    optional string VehicleDescription = 6;
+    optional string CouponName = 7;
+}
+
+message AddItemRequest{
+    CartIdentifier Cart = 1;
+    CartItem item = 3;
+}
+
+message RemoveItemRequest{
+    CartIdentifier Cart = 1;
+    string ProductUuid = 3;
+}
+
+message DeleteCartItemRequest{
+    CartIdentifier Cart = 1;
+    string ProductUuid = 3;
+}
+message QuantityRequest
+{
+    CartIdentifier Cart =  1 ;
+    string ProductUuid = 2;
+    int32 Quantity =  3;
+}
+message DeleteCartRequest
+{
+    CartIdentifier Cart = 1;
+}
+
+message Empty{}
