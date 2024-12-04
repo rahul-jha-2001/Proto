@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package Order_v1;
+import "google/protobuf/timestamp.proto";
+
+service OrderService{
+    // Core order service 
+        rpc CreateOrder (CreateOrderRequest) returns(OrderResponse);
+        rpc GetOrder (GetOrderRequest) returns (OrderResponse);
+        rpc UpdateOrder (UpdateOrderRequest) returns (OrderResponse);
+        rpc DeleteOrder (DeleteOrderRequest) returns (empty);
+        rpc ListOrder (ListOrderRequest) returns (ListOrderResponse);
+}
+
+enum OrderState {
+    ORDER_STATE_UNSPECIFIED = 0;
+    ORDER_STATE_PAYMENT_PENDING = 1;
+    ORDER_STATE_COMPLETE = 2;
+    ORDER_STATE_CANCELED = 3;
+    ORDER_STATE_PLACED = 4;
+}
+
+enum PaymentState {
+    PAYMENT_STATE_UNSPECIFIED = 0;
+    PAYMENT_STATE_COMPLETE = 1;
+    PAYMENT_STATE_FAILED = 2;
+    PAYMENT_STATE_PENDING = 3;
+}
+
+enum OrderType {
+    ORDER_TYPE_UNSPECIFIED = 0;
+    ORDER_TYPE_DINE_IN = 1;
+    ORDER_TYPE_TAKE_AWAY = 2;
+    ORDER_TYPE_DRIVE_THRU = 3;
+}
+
+message Order{
+
+    string OrderUuid = 1;
+    string StoreUuid = 2;
+    string UserPhoneNo = 3;
+    OrderType OrderType = 4;
+    optional string TableNo = 5;
+    optional string VehicleNo = 6;
+    optional string VehicleDescription = 7;
+    optional string CouponName = 8;
+    repeated OrderItem Items = 9;
+    float TotalAmount = 10;
+    float DiscountAmount = 11;
+    float FinalAmount = 12;
+
+    PaymentState PaymentState = 13;
+    string PaymentMethod = 14;
+
+    optional string SpecialInstruction = 15;
+
+    OrderState OrderStatus = 16;
+    
+    google.protobuf.Timestamp CreatedAt = 17;
+    google.protobuf.Timestamp UpdatedAt = 18;
+    
+}
+
+message CreateOrderRequest{
+    Order Order = 1;
+}
+message OrderResponse{
+    bool Success = 1;
+    Order Order = 2;
+}
+message GetOrderRequest{
+    string OrderUuid  = 1;
+}
+message UpdateOrderRequest{
+    string OrderUuid = 1;
+    Order Order = 2;
+}
+message DeleteOrderRequest{
+    string OrderUuid = 1;
+}
+message ListOrderRequest{
+    string StoreUuid = 1;
+    string UserPhoneNo =2;
+}
+message ListOrderResponse{
+    repeated Order Orders =1;
+}
+
+message OrderItem{
+    string ProductUuid = 1;
+    float Price = 2;
+    int32 Quantity = 3;
+    float Discount = 4;
+    float SubTotal = 5;
+    float TaxedAmount  = 6;
+    float DiscountAmount = 7;
+}
+message empty{}

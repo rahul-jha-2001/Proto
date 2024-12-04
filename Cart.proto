@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package Cart.v1;
+package Cart_v1;
 import "google/protobuf/timestamp.proto";
 
 service CartService {
