@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package UserAuth_v1;
+import "google/protobuf/timestamp.proto";
+
+
+message Token {
+
+    string access = 1;
+    string refresh = 2;
+
+}
+// OTP-related messages
+message OTPRequest {
+    string PhoneNumber = 1;
+    string UserName = 2;
+    string StoreUuid = 3;
+}
+message VerifyOTPRequest {
+    string PhoneNumber = 1;
+    string UserName = 2;
+    string StoreUuid = 3;
+    string OTP =4;
+}
+
+message OTPResponse {
+    bool   Success = 1;
+    string message = 2;
+    optional google.protobuf.Timestamp CreatedAt = 4;
+    
+}
+
+// Authentication Response
+message AuthResponse {
+    bool   authenticated = 1;
+    Token  JWTtoken = 2;
+    string message = 3;
+}
+
+// Store-related messages
+message CreateStoreRequest {
+    string Email = 1;
+    string Password = 2;
+    string PhoneNumber = 3;
+    string StoreName = 4;
+    string StoreAddress = 5;
+    string GSTNumber = 6;
+}
+
+message CreateStoreResponse {
+    bool   success = 1;
+    string StoreUuid = 2;
+    string message = 3;
+}
+
+message AuthStoreRequest {
+    string Email = 1;
+    string Password = 2;
+}
+
+message AuthStoreResponse {
+    bool   Authenticated = 1;
+    string StoreUuid = 2;
+    Token JWTToken = 3;
+    string message = 4;
+}
+
+message UpdateStoreRequest {
+    string StoreUuid = 1;
+    optional string PhoneNumber = 2;
+    optional string StoreName = 3;
+    optional string StoreAddress = 4;
+    optional string GSTNumber = 5;
+}
+
+message UpdateStoreResponse {
+    bool   success = 1;
+    string message = 2;
+}
+
+
+service UserAuthService{
+
+    //Customer Service
+        rpc CreateOTP(OTPRequest) returns (OTPResponse);
+        rpc VerifyOTP(VerifyOTPRequest) returns (AuthResponse);
+
+    //Store Service
+        rpc CreateStore(CreateStoreRequest) returns (CreateStoreResponse);
+        rpc AuthStore(AuthStoreRequest) returns (AuthStoreResponse);
+        rpc UpdateStore(UpdateStoreRequest) returns (UpdateStoreResponse);
+      //  rpc ViewStore(ViewStoreRequest) returns (ViewStoreResponse);
+    // add token refresh in this later 
+}
+
