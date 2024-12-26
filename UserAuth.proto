@@ -61,7 +61,7 @@ message AuthStoreRequest {
 message AuthStoreResponse {
     bool   Authenticated = 1;
     string StoreUuid = 2;
-    Token JWTToken = 3;
+    Token  JWTToken = 3;
     string message = 4;
 }
 
@@ -71,6 +71,7 @@ message UpdateStoreRequest {
     optional string StoreName = 3;
     optional string StoreAddress = 4;
     optional string GSTNumber = 5;
+    optional string Email = 6;
 }
 
 message UpdateStoreResponse {
