@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package messaging_v1;
+
+// Define the Message template structure
+message Template {
+    string TemplateId = 1;
+    string Name = 2;
+    string Body = 3;
+    
+    string Language = 4;
+    string HeaderType = 5; // text, media, button
+
+    map<string, string> Buttons = 6; // Optional
+}
+
+// Define the request and response for Viewing a template
+message ViewMessagesRequest{
+    string TemplateId = 1;
+}
+
+message ViewMessagesResponse{
+    Template Template =1;
+    bool Success = 2;
+}
+
+// Define the request and response for adding a template
+message AddTemplateRequest {
+    Template template = 1;
+}
+
+message AddTemplateResponse {
+    string message = 1; // Confirmation message
+}
+
+// Define the request and response for editing a template
+message EditTemplateRequest {
+    string TemplateId = 1; // ID of the template to edit
+    Template UpdatedTemplate = 2;
+}
+
+message EditTemplateResponse {
+    string message = 1; // Confirmation message
+}
+
+// Define the request and response for deleting a template
+message DeleteTemplateRequest {
+    string TemplateId = 1; // ID of the template to delete
+}
+
+message DeleteTemplateResponse {
+    string message = 1; // Confirmation message
+}
+
+// Define the request and response for sending a message
+message SendMessageRequest {
+    string TemplateId = 1; // Template to use
+    string Recipient = 2;   // Recipient info
+    map<string, string> Placeholders = 3; // Placeholders for the template
+    string Priority = 4;    // high, normal, low
+}
+
+message SendMessageResponse {
+    string MessageId = 1;  // ID of the message sent
+    string Status = 2;      // sent, failed, etc.
+}
+
+// Define the request and response for viewing messages with filters
+message ViewMessagesRequest {
+    string Status = 1;      // Filter by status (pending, sent, etc.)
+    string Recipient = 2;   // Filter by recipient
+    string Priority = 3;    // Filter by priority
+    string TemplateId = 4; // Filter by template
+    int32 Page = 5;         // For pagination
+    int32 PageSize = 6;    // For pagination
+}
+
+message Message {
+    string message_id = 1;
+    string TemplateId = 2;
+    string recipient = 3;
+    map<string, string> placeholders = 4;
+    string status = 5;
+    string priority = 6;
+    string created_at = 7;
+}
+
+message ViewMessagesResponse {
+    repeated Message messages = 1; // List of messages matching the filters
+}
+
+// Messaging service definition
+service MessagingService {
+    rpc AddTemplate(AddTemplateRequest) returns (AddTemplateResponse);
+    rpc EditTemplate(EditTemplateRequest) returns (EditTemplateResponse);
+    rpc DeleteTemplate(DeleteTemplateRequest) returns (DeleteTemplateResponse);
+    rpc ViewTemplate(ViewTemplateRequest) returns (ViewTemplateResponse);
+
+    rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
+    rpc ViewMessages(ViewMessagesRequest) returns (ViewMessagesResponse);
+}
