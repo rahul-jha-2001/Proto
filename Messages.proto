@@ -1,0 +1,402 @@
+syntax = "proto3";
+
+// messaging_v1 package handles all messaging-related functionality
+// including message creation, delivery, and management
+package messaging_v1;
+
+import "google/protobuf/timestamp.proto";
+
+// Variables represents a key-value store of template variables
+// used for message personalization
+message Variables {
+    // variables is a map of variable names to their values
+    // Example: {"name": "John", "code": "12345"}
+    map<string, string> variables = 1;
+}
+
+// Recipient contains the source and destination phone numbers
+// for a message
+message Recipient {
+    // to_number should be in E.164 format (e.g., +14155552671)
+    string to_number = 1;
+    // from_number should be a valid sender number in E.164 format
+    string from_number = 2;
+}
+
+// MetaData contains tracking and debugging information for messages
+message MetaData {
+    // Unique identifier for tracking the request through the system
+    string request_id = 1;
+    // Name of the service that initiated the message request
+    string source_service = 2;
+    // Timestamp when the message was created
+    google.protobuf.Timestamp created_at = 3;
+}
+
+// MessageEvent represents a request to send a message
+message MessageEvent {
+    // Name of the template to be used for the message
+    string template_name = 1;
+    // Variables to be interpolated into the template
+    Variables variables = 2;
+    // Recipient information for the message
+    Recipient recipient = 3;
+    // Metadata for tracking and debugging
+    // MetaData meta_data = 4;
+}
+
+// MessageStatus represents the current state of a message
+enum MessageStatus {
+    // Message is created but not yet processed
+    PENDING = 0;
+    // Message has been successfully delivered
+    SENT = 1;
+    // Message failed to send after all retry attempts
+    FAILED = 2;
+}
+
+// MessagePriority determines the handling priority and rate limiting
+// of different message types
+enum MessagePriority {
+    // Marketing messages have lowest priority and strictest rate limiting
+    MARKETING = 0;
+    // Utility messages for general notifications and updates
+    UTILITY = 1;
+    // Authentication messages (like OTP) have highest priority
+    AUTHENTICATION = 2;
+}
+
+// MessageService provides functionality for sending and managing messages
+service MessageService {
+    // Admin Services
+    
+    // AddMessageEvent creates a new message in the system
+    // Returns the created message or error if creation fails
+    // Errors:
+    // - INVALID_ARGUMENT: If the message event is malformed
+    // - ALREADY_EXISTS: If a duplicate message is detected
+    // - INSUFFICIENT_CREDITS: If account lacks credits
+    rpc AddMessageEvent(AddMessageEventRequest) returns (AddMessageEventResponse);
+
+    // UpdateMessageEvent modifies an existing message
+    // Only allows updates to certain fields (e.g., status, variables)
+    // Errors:
+    // - NOT_FOUND: If message doesn't exist
+    // - INVALID_STATE: If message is already sent
+    rpc UpdateMessageEvent(UpdateMessageEventRequest) returns (UpdateMessageEventResponse);
+
+    // RemoveMessageEvent deletes a message from the system
+    // Only pending messages can be removed
+    // Errors:
+    // - NOT_FOUND: If message doesn't exist
+    // - INVALID_STATE: If message is already sent
+    rpc RemoveMessageEvent(RemoveMessageEventRequest) returns (RemoveMessageEventResponse);
+
+    // GetMessageEvent retrieves detailed information about a specific message
+    // Errors:
+    // - NOT_FOUND: If message doesn't exist
+    rpc GetMessageEvent(GetMessageEventRequest) returns (GetMessageEventResponse);
+
+    // ListMessageEvents retrieves a paginated list of messages
+    // filtered by the provided criteria
+    rpc ListMessageEvents(ListMessageEventRequest) returns (ListMessageEventResponse);
+
+    // InvalidMessageEvent retrieves a paginated list of invalid messages
+    rpc ListInvalidMessageEvents(ListInvalidMessageEventRequest) returns (ListInvalidMessageEventResponse); 
+
+
+    // Client Services
+
+    // // GetMessage retrieves a simplified view of a message
+    // // Suitable for client applications
+    // rpc GetMessage(GetMessageRequest) returns (GetMessageResponse);
+
+    // // DeleteMessage removes a message (client version)
+    // // Only allows deletion of user's own messages
+    // rpc DeleteMessage(DeleteMessageRequest) returns (DeleteMessageResponse);
+
+    // // ListMessages retrieves a paginated list of messages (client version)
+    // // Only returns messages relevant to the requesting user
+    // rpc ListMessages(ListMessageRequest) returns (ListMessageResponse);
+}
+
+// Error represents a structured error response
+message Error {
+    // Human-readable error message
+    string error = 1;
+    // Machine-readable error code for programmatic handling
+    string error_code = 2;
+}
+
+// ShortMessage represents a simplified view of a message
+// Used in client-facing APIs
+message ShortMessage {
+    // Include the readable message in future
+
+    // Unique identifier for the message
+    string id = 1;
+    // Destination phone number in E.164 format
+    string to_phone_number = 2;
+    // Source phone number in E.164 format
+    string from_phone_number = 3;
+    // Name of the template used
+    string template_name = 4;
+    // Current status of the message
+    MessageStatus status = 5;
+    // Final rendered message content
+    string variables = 6;
+    // Type/priority of the message
+    MessagePriority message_type = 7;
+    // Timestamp when message was created
+    google.protobuf.Timestamp created_at = 8;
+    // Timestamp of last status update
+    google.protobuf.Timestamp updated_at = 9;
+    // Timestamp when message was sent (if successful)
+    google.protobuf.Timestamp sent_at = 10;
+}
+
+// InvalidMessageEvent represents a message that failed to send
+message InvalidMessageEvent {
+    // Unique identifier for the message
+    string id = 1;
+    // Destination phone number in E.164 format
+    string to_phone_number = 2;
+    // Source phone number in E.164 format
+    string from_phone_number = 3;
+    // Name of the template used
+    string template = 4;
+    // Error message
+    string message_json = 5;
+    // Rendered message
+    string rendered_message = 6;
+    // Error message
+    string error_message = 7;
+    // Variables used in template
+    string variables = 8;
+    // Timestamp when message was created
+    google.protobuf.Timestamp created_at = 9;
+    // Timestamp of last status update
+    google.protobuf.Timestamp updated_at = 10; 
+}
+
+// Message represents the complete message record
+// Contains all details about a message
+message Message {
+    // Fields are same as ShortMessage plus additional metadata
+    optional string id = 1;
+    string to_phone_number = 2;
+    string from_phone_number = 3;
+    string template_name = 4;
+    MessageStatus status = 5;
+    // Original message template in JSON format
+    string message_json = 6;
+    // Final rendered message content
+    string rendered_message = 7;
+    // Variables used in template
+    string variables = 8;
+    MessagePriority message_type = 9;
+    google.protobuf.Timestamp created_at = 10;
+    google.protobuf.Timestamp updated_at = 11;
+    optional google.protobuf.Timestamp sent_at = 12;
+    // Error message if status is FAILED
+    string error_message = 13;
+}
+
+// AddMessageEventRequest represents a request to create a new message
+message AddMessageEventRequest {
+    // The message event details to be created
+    // All fields in MessageEvent are required
+    MessageEvent message_event = 1;
+}
+
+// AddMessageEventResponse contains the result of message creation
+message AddMessageEventResponse {
+    // The created message with all fields populated
+    optional Message message = 1;
+    // Indicates if the operation was successful
+    bool success = 2;
+    // Contains error details if success is false
+    Error error = 3;
+}
+
+// UpdateMessageEventRequest represents a request to modify an existing message
+message UpdateMessageEventRequest {
+    // The updated message event details
+    // Must include the message ID in the event
+    string message_id = 1;
+    MessageEvent message_event = 2;
+    
+}
+
+// UpdateMessageEventResponse contains the result of message update
+message UpdateMessageEventResponse {
+    // The updated message with all changes applied
+    optional Message message = 1;
+    // Indicates if the operation was successful
+    bool success = 2;
+    // Contains error details if success is false
+    Error error = 3;
+}
+
+// RemoveMessageEventRequest represents a request to delete a message
+message RemoveMessageEventRequest {
+    // Unique identifier of the message to remove
+    string id = 1;
+}
+
+// RemoveMessageEventResponse contains the result of message deletion
+message RemoveMessageEventResponse {
+    // Indicates if the deletion was successful
+    bool success = 1;
+    // Contains error details if success is false
+    Error error = 2;
+}
+
+// GetMessageEventRequest represents a request to retrieve a specific message
+message GetMessageEventRequest {
+    // Unique identifier of the message to retrieve
+    string message_id = 1;
+}
+
+// GetMessageEventResponse contains the requested message details
+message GetMessageEventResponse {
+    // The requested message with all its details
+    optional Message message = 1;
+    // Indicates if the retrieval was successful
+    bool success = 2;
+    // Contains error details if success is false
+    Error error = 3;
+}
+
+// ListMessageEventRequest represents a request to retrieve multiple messages
+// with optional filtering criteria
+message ListMessageEventRequest {
+    // Filter by template name (optional)
+    optional string template_name = 1;
+    // Filter by destination phone number (optional)
+    optional string to_phone_number = 2;
+    // Filter by source phone number (optional)
+    optional string from_phone_number = 3;
+    // Filter by message category/priority (optional)
+    optional MessagePriority message_category = 4;
+    // Filter by message status (optional)
+    optional MessageStatus status = 5;
+    // Filter messages created after this timestamp (optional)
+    optional google.protobuf.Timestamp start_date = 6;   
+    // Filter messages created before this timestamp (optional)
+    optional google.protobuf.Timestamp end_date = 7;
+    // Page number for pagination (1-based, required)
+    int32 page = 8;
+    // Number of items per page (required, max 100)
+    int32 limit = 9; 
+    
+}
+
+// ListMessageEventResponse contains the paginated list of messages
+message ListMessageEventResponse {
+    // List of messages matching the filter criteria
+    repeated Message messages = 1;
+    // Indicates if the operation was successful
+    bool success = 2;
+    // Contains error details if success is false
+    Error error = 3;
+
+    int32 next_page =4;
+    int32 previous_page =5;
+}
+
+// GetMessageRequest represents a client request to retrieve a message
+message GetMessageRequest {
+    // Unique identifier of the message to retrieve
+    string message_id = 1;
+}
+
+// GetMessageResponse contains the simplified message view for clients
+message GetMessageResponse {
+    // Simplified message view suitable for clients
+    optional ShortMessage message = 1;
+    // Indicates if the retrieval was successful
+    bool success = 2;
+    // Contains error details if success is false
+    Error error = 3;
+}
+
+// DeleteMessageRequest represents a client request to delete a message
+message DeleteMessageRequest {
+    // Unique identifier of the message to delete
+    string message_id = 1;
+}
+
+// DeleteMessageResponse contains the result of client message deletion
+message DeleteMessageResponse {
+    // Indicates if the deletion was successful
+    bool success = 1;
+    // Contains error details if success is false
+    Error error = 2;
+}
+
+// ListMessageRequest represents a client request to retrieve multiple messages
+// with optional filtering criteria
+message ListMessageRequest {
+    // Filter by template name (optional)
+    optional string template_name = 1;
+    // Filter by destination phone number (optional)
+    optional string to_phone_number = 2;
+    // Filter by source phone number (optional)
+    optional string from_phone_number = 3;
+    // Filter by message category/priority (optional)
+    optional MessagePriority message_category = 4;
+    // Filter by message status (optional)
+    optional MessageStatus status = 5;
+    // Filter messages created after this timestamp (optional)
+    google.protobuf.Timestamp start_date = 6;   
+    // Filter messages created before this timestamp (optional)
+    google.protobuf.Timestamp end_date = 7;
+    // Page number for pagination (1-based, required)
+    int32 page = 8;
+    // Number of items per page (required, max 100)
+    int32 limit = 9;    
+}
+
+// ListMessageResponse contains the paginated list of messages for clients
+message ListMessageResponse {
+    // List of messages matching the filter criteria
+    repeated ShortMessage messages = 1;
+    // Indicates if the operation was successful
+    bool success = 2;
+    // Contains error details if success is false
+    Error error = 3;
+    int32 next_page =4;
+    int32 previous_page =5;
+}
+
+
+// ListInvalidMessageEventRequest represents a request to retrieve a paginated list of invalid messages
+message ListInvalidMessageEventRequest {
+    optional string template = 1;
+    // Filter by destination phone number (optional)
+    optional string to_phone_number = 2;
+    // Filter by source phone number (optional)
+    optional string from_phone_number = 3;
+    // Filter messages created after this timestamp (optional)
+    google.protobuf.Timestamp start_date = 4;   
+    // Filter messages created before this timestamp (optional)
+    google.protobuf.Timestamp end_date = 5;
+    // Page number for pagination (1-based, required)
+    int32 page = 6;
+    // Number of items per page (required, max 100)
+    int32 limit = 7;    
+}
+
+// ListInvalidMessageEventResponse contains the paginated list of invalid messages
+message ListInvalidMessageEventResponse {
+    // List of invalid messages matching the filter criteria
+    repeated InvalidMessageEvent invalid_messages = 1;
+    // Indicates if the operation was successful
+    bool success = 2;
+    // Contains error details if success is false
+    Error error = 3;
+    int32 next_page =4;
+    int32 previous_page =5;
+}
+
