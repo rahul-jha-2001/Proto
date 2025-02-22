@@ -241,7 +241,7 @@ message UpdateMessageEventResponse {
 // RemoveMessageEventRequest represents a request to delete a message
 message RemoveMessageEventRequest {
     // Unique identifier of the message to remove
-    string id = 1;
+    string message_id = 1;
 }
 
 // RemoveMessageEventResponse contains the result of message deletion

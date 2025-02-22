@@ -91,10 +91,10 @@ message GetTemplateResponse {
 }
 
 message ListTemplatesRequest {
-    string category = 1;
-    string status = 2;
+    optional TemplateCategory category = 1;
+    optional TemplateStatus status = 2;
     string language = 3;
-    string parameter_format = 4;
+    optional TemplateParameterFormat parameter_format = 4;
     int32 page = 5;
     int32 limit = 6;
 }
