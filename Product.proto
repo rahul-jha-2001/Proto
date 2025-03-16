@@ -1,81 +1,299 @@
 syntax = "proto3";
 
-package product;
+package product_v1;
 
-service ProductService{
-    rpc CreateProduct (CreateProductRequest) returns (ProductResponse);
+import "google/protobuf/timestamp.proto";
+import "annotations.proto";
+option go_package = "gateway/gen/go;product";
 
-    rpc GetProduct (GetProductRequest) returns (ProductResponse);
 
-    rpc UpdateProduct (UpdateProductRequest) returns (ProductResponse);
 
-    rpc DeleteProduct (DeleteProductRequest) returns (DeleteProductResponse);
 
-    rpc ListProducts(ListProductsRequest) returns (ListProductsResponse);
+enum Productstatus{
+
+    DRAFT = 0;
+    ACTIVE = 1;
+    INACTIVE =2;
 
 }
 
-message CreateProductRequest
+message category 
 {
-    string  StoreUuid = 1;
-    string  Name = 2;
-    bool    IsAvailable  = 3;
-    float   Price = 4;
-    string  CategoryUuid = 5;
-    string  Description = 6;
-    string  ImageUrl = 7;
+    optional string category_uuid = 1;
+    optional string store_uuid =2;
+    optional string name =3;
+    optional string description = 4;
+    optional int32 display_order =5;
+    optional bool is_available = 6;
+    optional bool is_active = 7;
+    
+    google.protobuf.Timestamp created_at =8;
+    google.protobuf.Timestamp updated_at = 9;
+
+
 }
 
-message GetProductRequest 
+message add_on{
+    optional string add_on_uuid = 1;
+    optional string name =2;
+    optional bool is_available =3;
+    optional int32 max_selectable = 4;
+    optional float GST_percentage =5;
+    optional float price = 6;
+    optional string product_uuid = 7;
+    optional google.protobuf.Timestamp created_at = 8;
+    // Timestamp of last status update
+    optional google.protobuf.Timestamp updated_at = 9;
+
+}
+
+message product
 {
-    string ProductUuid = 1;  // Added ProductUuid for getting a specific product.
-    string StoreUuid = 2;    // Keep StoreUuid in case you want to get a product in a specific store.
-
+    optional string product_uuid = 1;
+    string store_uuid = 2;
+    optional string name = 3;
+    optional string description = 4;
+    optional Productstatus status =5;
+    optional bool is_available = 6;
+    optional float display_price =7;
+    optional float price = 8;
+    optional float GST_percentage = 9;
+    optional string category_uuid = 10;
+    optional string dietary_pref =11;
+    optional string image_URL = 12;
+    optional google.protobuf.Timestamp created_at = 13;
+    // Timestamp of last status update
+    optional google.protobuf.Timestamp updated_at = 14;
 }
 
-message ListProductsRequest
-{
-    string  StoreUuid = 1;
-}
-
-
-message DeleteProductRequest
-{
-    string  ProductUuid = 1;
-}
-
-message UpdateProductRequest
-{
-                string ProductUuid = 1;
-    optional    string Name = 2;
-    optional    bool IsAvailable  = 3;
-    optional    float Price = 4;
-    optional    string CategoryUuid = 5;
-    optional    string Description = 6;
-    optional    string ImageUrl = 7;
-}
-
-message ProductResponse
-{
-    bool    Success = 1 ;
-    string  ProductUuid = 2;
-    string  Name = 3;
-    bool    IsAvailable  = 4;
-    float   Price = 5;
-    string  CategoryUuid = 6;
-    string  Description = 7;
-    string  ImageUrl = 8;
-}
-
-message DeleteProductResponse
-{
-    bool Success = 1;
-}
-
-message ListProductsResponse 
-{
-    repeated ProductResponse products = 1;
+message error {
+    string error_message =1;
+    string error_code = 2;
 }
 
 
+service ProductService {
+    rpc CreateCategory (CreateCategoryRequest) returns (CategoryResponse) {
+      option (google.api.http) = {
+        post: "/v1/categories/{store_uuid}"  // Use lowercase and path variable
+        body: "category"
+      };
+    };
+  
+    rpc UpdateCategory (UpdateCategoryRequest) returns (CategoryResponse) {
+      option (google.api.http) = {
+        patch: "/v1/categories/{category_uuid}"  // Add path variable
+        body: "category"
+      };
+    };
+  
+    rpc GetCategory (GetCategoryRequest) returns (CategoryResponse) {
+      option (google.api.http) = {
+        get: "/v1/categories"  // Query parameters are handled automatically
+      };
+    };
+  
+    rpc ListCategory (ListCategoryRequest) returns (ListCategoryResponse) {
+      option (google.api.http) = {
+        get: "/v1/categories/list"  // Use lowercase
+      };
+    };
+  
+    rpc DeleteCategory (DeleteCategoryRequest) returns (DeleteCategoryResponse) {
+      option (google.api.http) = {
+        delete: "/v1/categories/{category_uuid}"  // Add path variable
+      };
+    };
+  
+    rpc CreateProduct (CreateProductRequest) returns (ProductResponse) {
+      option (google.api.http) = {
+        post: "/v1/products"  // Use lowercase
+        body: "*"  // Use "*" for the entire request body
+      };
+    };
+  
+    rpc GetProduct (GetProductRequest) returns (ProductResponse) {
+      option (google.api.http) = {
+        get: "/v1/products"  // Query parameters are handled automatically
+      };
+    };
+  
+    rpc UpdateProduct (UpdateProductRequest) returns (ProductResponse) {
+      option (google.api.http) = {
+        patch: "/v1/products/{product_uuid}"  // Add path variable
+        body: "*"  // Use "*" for the entire request body
+      };
+    };
+  
+    rpc DeleteProduct (DeleteProductRequest) returns (DeleteProductResponse) {
+      option (google.api.http) = {
+        delete: "/v1/products/{product_uuid}"  // Add path variable
+      };
+    };
+  
+    rpc ListProducts (ListProductsRequest) returns (ListProductsResponse) {
+      option (google.api.http) = {
+        get: "/v1/products/list"  // Use lowercase
+      };
+    };
+  
+    rpc CreateAddOn (CreateAddOnRequest) returns (AddOnResponse) {
+      option (google.api.http) = {
+        post: "/v1/add_ons"  // Use lowercase
+        body: "add_on"
+      };
+    };
+  
+    rpc GetAddOn (GetAddOnRequest) returns (AddOnResponse) {
+      option (google.api.http) = {
+        get: "/v1/add_ons"  // Query parameters are handled automatically
+      };
+    };
+  
+    rpc UpdateAddOn (UpdateAddOnRequest) returns (AddOnResponse) {
+      option (google.api.http) = {
+        put: "/v1/add_ons/{add_on_uuid}"  // Add path variable
+        body: "add_on"
+      };
+    };
+  
+    rpc DeleteAddOn (DeleteAddOnRequest) returns (DeleteAddOnResponse) {
+      option (google.api.http) = {
+        delete: "/v1/add_ons/{add_on_uuid}"  // Add path variable
+      };
+    };
+  
+    rpc ListAddOn (ListAddOnRequest) returns (ListAddOnResponse) {
+      option (google.api.http) = {
+        get: "/v1/add_ons/list"  // Use lowercase
+      };
+    };
+  }
 
+message CreateCategoryRequest{
+
+    string store_uuid =1;
+    category category = 2;
+
+}
+message CategoryResponse{
+    category category = 1;
+    bool success = 2;
+    error error =3;
+}
+message UpdateCategoryRequest{
+    string store_uuid =1;
+    string category_uuid = 2;
+    optional category category = 3;
+}
+message GetCategoryRequest{
+
+    string category_uuid = 1;
+    string store_uuid =2;
+
+}
+message ListCategoryRequest{
+    string store_uuid = 1;
+    int32 page = 2;
+    int32 limit = 3;
+}
+message ListCategoryResponse{
+    repeated category categories = 1;
+    int32 prev_page = 2;
+    int32 next_page = 3;
+    bool success = 4;
+    optional error error = 5;
+}
+message DeleteCategoryRequest{
+    string category_uuid = 1;
+    string store_uuid =2;
+}
+message DeleteCategoryResponse{
+    bool success = 1;
+    error error =2;
+}
+message CreateProductRequest{
+
+    product product = 1;
+    bytes Image =2;
+    
+}
+message ProductResponse{
+    optional product product = 1;
+    bool success = 2;
+    optional error error = 3;
+}
+message GetProductRequest{
+    string product_uuid =1;
+    string store_uuid = 2;
+}
+message UpdateProductRequest{
+    string product_uuid =1;
+    string store_uuid=2;
+    optional product product =3;
+    optional bytes image = 4;
+}
+message DeleteProductRequest{
+    string product_uuid = 1;
+    string store_uuid = 2;
+}
+message DeleteProductResponse{
+    bool success = 1;
+    error error = 2;
+}
+message ListProductsRequest{
+
+    string store_uuid = 1;
+    optional string  category_uuid = 2;
+    int32 page = 3;
+    int32 limit = 4;
+    
+}
+message ListProductsResponse{
+    repeated product products = 1;
+    bool success = 2;
+    error error =3;
+    int32 prev_page = 4;
+    int32 next_page = 5;
+
+}
+message CreateAddOnRequest{
+    string store_uuid = 1;
+    string product_uuid =2;
+    add_on add_on = 3;
+}
+message AddOnResponse{
+    optional add_on add_on = 1;
+    bool success = 2;
+    error error =3;
+}
+message DeleteAddOnRequest{
+    string add_on_uuid =1;
+}
+message DeleteAddOnResponse{
+    bool success = 1;
+    error error = 2;
+}
+message UpdateAddOnRequest{
+    string add_on_uuid =1;
+    optional add_on add_on =2;
+}
+message GetAddOnRequest{
+    string store_uuid = 1;
+    string product_uuid =2;
+    string add_on_uuid = 3;
+}
+message ListAddOnRequest{
+    string product_uuid = 1;
+    string store_uuid = 2;
+    int32 page = 3;
+    int32 limit = 4;
+
+}
+message ListAddOnResponse{
+    repeated add_on add_ons = 1;
+    bool success = 2;
+    error error = 3;
+    int32 next_page =4;
+    int32 prev_page = 5;
+}
