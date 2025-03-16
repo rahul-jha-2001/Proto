@@ -2,6 +2,9 @@ syntax = "proto3";
 
 package Order_v1;
 import "google/protobuf/timestamp.proto";
+option go_package = "/order;order";
+
+
 
 service OrderService{
     // Core order service 

@@ -1,6 +1,8 @@
 syntax = "proto3";
 
 package Cart_v1;
+option go_package = "/cart;cart";
+
 import "google/protobuf/timestamp.proto";
 
 service CartService {

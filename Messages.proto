@@ -3,6 +3,7 @@ syntax = "proto3";
 // messaging_v1 package handles all messaging-related functionality
 // including message creation, delivery, and management
 package messaging_v1;
+option go_package = "/messages;messages";
 
 import "google/protobuf/timestamp.proto";
 

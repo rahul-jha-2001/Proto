@@ -4,7 +4,7 @@ package product_v1;
 
 import "google/protobuf/timestamp.proto";
 import "annotations.proto";
-option go_package = "gateway/gen/go;product";
+option go_package = "/product;product";
 
 
 

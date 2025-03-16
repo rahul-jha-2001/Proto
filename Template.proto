@@ -1,6 +1,7 @@
 syntax = "proto3";  // Add syntax declaration
 
 package template.v1;  // Add package name
+option go_package = "/Template;Template";
 
 // Template service definitions for managing message templates
 
