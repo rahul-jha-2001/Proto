@@ -110,7 +110,7 @@ service ProductService {
   rpc CreateProduct (CreateProductRequest) returns (ProductResponse) {
     option (google.api.http) = {
       post: "/v1/stores/{store_uuid}/categories/{category_uuid}/products"
-      body: "product"
+      body: "*"
     };
   };
 
