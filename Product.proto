@@ -73,102 +73,105 @@ message error {
 
 
 service ProductService {
-    rpc CreateCategory (CreateCategoryRequest) returns (CategoryResponse) {
-      option (google.api.http) = {
-        post: "/v1/categories/{store_uuid}"  // Use lowercase and path variable
-        body: "category"
-      };
+  // Categories
+  rpc CreateCategory (CreateCategoryRequest) returns (CategoryResponse) {
+    option (google.api.http) = {
+      post: "/v1/stores/{store_uuid}/categories"
+      body: "*"
     };
-  
-    rpc UpdateCategory (UpdateCategoryRequest) returns (CategoryResponse) {
-      option (google.api.http) = {
-        patch: "/v1/categories/{category_uuid}"  // Add path variable
-        body: "category"
-      };
+  };
+
+  rpc UpdateCategory (UpdateCategoryRequest) returns (CategoryResponse) {
+    option (google.api.http) = {
+      patch: "/v1/stores/{store_uuid}/categories/{category_uuid}"
+      body: "*"
     };
-  
-    rpc GetCategory (GetCategoryRequest) returns (CategoryResponse) {
-      option (google.api.http) = {
-        get: "/v1/categories"  // Query parameters are handled automatically
-      };
+  };
+
+  rpc GetCategory (GetCategoryRequest) returns (CategoryResponse) {
+    option (google.api.http) = {
+      get: "/v1/stores/{store_uuid}/categories/{category_uuid}"
     };
-  
-    rpc ListCategory (ListCategoryRequest) returns (ListCategoryResponse) {
-      option (google.api.http) = {
-        get: "/v1/categories/list"  // Use lowercase
-      };
+  };
+
+  rpc ListCategory (ListCategoryRequest) returns (ListCategoryResponse) {
+    option (google.api.http) = {
+      get: "/v1/stores/{store_uuid}/categories"
     };
-  
-    rpc DeleteCategory (DeleteCategoryRequest) returns (DeleteCategoryResponse) {
-      option (google.api.http) = {
-        delete: "/v1/categories/{category_uuid}"  // Add path variable
-      };
+  };
+
+  rpc DeleteCategory (DeleteCategoryRequest) returns (DeleteCategoryResponse) {
+    option (google.api.http) = {
+      delete: "/v1/stores/{store_uuid}/categories/{category_uuid}"
     };
-  
-    rpc CreateProduct (CreateProductRequest) returns (ProductResponse) {
-      option (google.api.http) = {
-        post: "/v1/products"  // Use lowercase
-        body: "*"  // Use "*" for the entire request body
-      };
+  };
+
+  // Products
+  rpc CreateProduct (CreateProductRequest) returns (ProductResponse) {
+    option (google.api.http) = {
+      post: "/v1/stores/{store_uuid}/categories/{category_uuid}/products"
+      body: "product"
     };
-  
-    rpc GetProduct (GetProductRequest) returns (ProductResponse) {
-      option (google.api.http) = {
-        get: "/v1/products"  // Query parameters are handled automatically
-      };
+  };
+
+  rpc GetProduct (GetProductRequest) returns (ProductResponse) {
+    option (google.api.http) = {
+      get: "/v1/stores/{store_uuid}/categories/{category_uuid}/products/{product_uuid}"
     };
-  
-    rpc UpdateProduct (UpdateProductRequest) returns (ProductResponse) {
-      option (google.api.http) = {
-        patch: "/v1/products/{product_uuid}"  // Add path variable
-        body: "*"  // Use "*" for the entire request body
-      };
+  };
+
+  rpc UpdateProduct (UpdateProductRequest) returns (ProductResponse) {
+    option (google.api.http) = {
+      patch: "/v1/stores/{store_uuid}/categories/{category_uuid}/products/{product_uuid}"
+      body: "*"
     };
-  
-    rpc DeleteProduct (DeleteProductRequest) returns (DeleteProductResponse) {
-      option (google.api.http) = {
-        delete: "/v1/products/{product_uuid}"  // Add path variable
-      };
+  };
+
+  rpc DeleteProduct (DeleteProductRequest) returns (DeleteProductResponse) {
+    option (google.api.http) = {
+      delete: "/v1/stores/{store_uuid}/categories/{category_uuid}/products/{product_uuid}"
     };
-  
-    rpc ListProducts (ListProductsRequest) returns (ListProductsResponse) {
-      option (google.api.http) = {
-        get: "/v1/products/list"  // Use lowercase
-      };
+  };
+
+  rpc ListProducts (ListProductsRequest) returns (ListProductsResponse) {
+    option (google.api.http) = {
+      get: "/v1/stores/{store_uuid}/categories/{category_uuid}/products"
     };
-  
-    rpc CreateAddOn (CreateAddOnRequest) returns (AddOnResponse) {
-      option (google.api.http) = {
-        post: "/v1/add_ons"  // Use lowercase
-        body: "add_on"
-      };
+  };
+
+  // Add-ons
+  rpc CreateAddOn (CreateAddOnRequest) returns (AddOnResponse) {
+    option (google.api.http) = {
+      post: "/v1/stores/{store_uuid}/products/{product_uuid}/add_ons"
+      body: "add_on"
     };
-  
-    rpc GetAddOn (GetAddOnRequest) returns (AddOnResponse) {
-      option (google.api.http) = {
-        get: "/v1/add_ons"  // Query parameters are handled automatically
-      };
+  };
+
+  rpc GetAddOn (GetAddOnRequest) returns (AddOnResponse) {
+    option (google.api.http) = {
+      get: "/v1/stores/{store_uuid}/products/{product_uuid}/add_ons/{add_on_uuid}"
     };
-  
-    rpc UpdateAddOn (UpdateAddOnRequest) returns (AddOnResponse) {
-      option (google.api.http) = {
-        put: "/v1/add_ons/{add_on_uuid}"  // Add path variable
-        body: "add_on"
-      };
+  };
+
+  rpc UpdateAddOn (UpdateAddOnRequest) returns (AddOnResponse) {
+    option (google.api.http) = {
+      put: "/v1/stores/{store_uuid}/products/{product_uuid}/add_ons/{add_on_uuid}"
+      body: "add_on"
     };
-  
-    rpc DeleteAddOn (DeleteAddOnRequest) returns (DeleteAddOnResponse) {
-      option (google.api.http) = {
-        delete: "/v1/add_ons/{add_on_uuid}"  // Add path variable
-      };
+  };
+
+  rpc DeleteAddOn (DeleteAddOnRequest) returns (DeleteAddOnResponse) {
+    option (google.api.http) = {
+      delete: "/v1/stores/{store_uuid}/products/{product_uuid}/add_ons/{add_on_uuid}"
     };
-  
-    rpc ListAddOn (ListAddOnRequest) returns (ListAddOnResponse) {
-      option (google.api.http) = {
-        get: "/v1/add_ons/list"  // Use lowercase
-      };
+  };
+
+  rpc ListAddOn (ListAddOnRequest) returns (ListAddOnResponse) {
+    option (google.api.http) = {
+      get: "/v1/stores/{store_uuid}/products/{product_uuid}/add_ons"
     };
-  }
+  };
+}
 
 message CreateCategoryRequest{
 
@@ -216,6 +219,8 @@ message CreateProductRequest{
 
     product product = 1;
     bytes Image =2;
+    string store_uuid =3;
+    string category_uuid =4;
     
 }
 message ProductResponse{
@@ -226,16 +231,22 @@ message ProductResponse{
 message GetProductRequest{
     string product_uuid =1;
     string store_uuid = 2;
+    string category_uuid = 3;
+
 }
 message UpdateProductRequest{
     string product_uuid =1;
     string store_uuid=2;
     optional product product =3;
     optional bytes image = 4;
+    string category_uuid = 5;
+
 }
 message DeleteProductRequest{
     string product_uuid = 1;
     string store_uuid = 2;
+    string category_uuid = 3;
+
 }
 message DeleteProductResponse{
     bool success = 1;
@@ -244,7 +255,7 @@ message DeleteProductResponse{
 message ListProductsRequest{
 
     string store_uuid = 1;
-    optional string  category_uuid = 2;
+    string  category_uuid = 2;
     int32 page = 3;
     int32 limit = 4;
     
@@ -267,22 +278,33 @@ message AddOnResponse{
     bool success = 2;
     error error =3;
 }
+
+message GetAddOnRequest{
+  string store_uuid = 1;
+  string product_uuid =2;
+  string add_on_uuid = 3;
+}
+
+message UpdateAddOnRequest{
+  string store_uuid =1;
+  string product_uuid =2;
+  string add_on_uuid =3;
+  optional add_on add_on =4;
+  
+}
+
 message DeleteAddOnRequest{
     string add_on_uuid =1;
+    string store_uuid =2;
+    string product_uuid =3;
+
 }
 message DeleteAddOnResponse{
     bool success = 1;
     error error = 2;
 }
-message UpdateAddOnRequest{
-    string add_on_uuid =1;
-    optional add_on add_on =2;
-}
-message GetAddOnRequest{
-    string store_uuid = 1;
-    string product_uuid =2;
-    string add_on_uuid = 3;
-}
+
+
 message ListAddOnRequest{
     string product_uuid = 1;
     string store_uuid = 2;
