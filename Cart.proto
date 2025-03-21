@@ -3,154 +3,383 @@ syntax = "proto3";
 package Cart_v1;
 option go_package = "/cart;cart";
 
+import "annotations.proto";
+import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 service CartService {
     //Core Cart Service
-        rpc CreateCart(CreateCartRequest) returns (CartResponse);
-        rpc GetCart(GetCartRequest) returns (CartResponse);
-        rpc UpdateCart(UpdateCartRequest) returns  (CartResponse);
-        rpc DeleteCart(DeleteCartRequest) returns (Empty);
-    //Cart item Service
-        rpc AddCartItem(AddItemRequest) returns (CartResponse);
-        rpc RemoveCartItem(RemoveItemRequest) returns (CartResponse);
-        rpc AddQuantity(QuantityRequest) returns (CartResponse);
-        rpc RemoveQuantity(QuantityRequest) returns (CartResponse);
+        rpc CreateCart(CreateCartRequest) returns (CartResponse){
+            option (google.api.http) = {
+                post: "v1/cart?store_uuid={store_uuid}&user_phone_no={user_phone_no}"
+                body: "*"
+            };
+        };
 
-        rpc ValidateCoupon (ValidCartResquest) returns (ValidCouponResponse);
+        rpc GetCart(GetCartRequest) returns (CartResponse){
+            option (google.api.http) = {
+                get: "v1/cart?store_uuid={store_uuid}&user_phone_no={user_phone_no}"
+                additional_bindings:{
+                    get :"v1/cart?cart_uuid={cart_uuid}"
+                }
+            };
+        };
+        rpc UpdateCart(UpdateCartRequest) returns  (CartResponse){
+            option (google.api.http) ={
+                put: "v1/cart?store_uuid={store_uuid}&user_phone_no={user_phone_no}"
+                body: "*"
+                additional_bindings:{
+                    put :"v1/cart?cart_uuid={cart_uuid}"
+                    body : "*"
+                }
+            };
+        };
+        rpc DeleteCart(DeleteCartRequest) returns (google.protobuf.Empty){
+            option (google.api.http) = {
+                delete: "v1/cart?store_uuid={store_uuid}&user_phone_no={user_phone_no}"
+                additional_bindings: {
+                    delete :"v1/cart?cart_uuid={cart_uuid}"
+                }
+            };
+        };
+            //Cart item Service
+        rpc AddCartItem(AddCartItemRequest) returns (CartResponse){
+            option (google.api.http) = {
+                post:"v1/cart/{cart_uuid}/cartitem"
+                body:"*"
+            };
+        };
+        rpc RemoveCartItem(RemoveCartItemRequest) returns (CartResponse){
+            option (google.api.http) = {
+                delete:"v1/cart/{cart_uuid}/cartitem/{cart_item_uuid}"
+            };
+        };
+        rpc AddQuantity(AddQuantityRequest) returns (CartResponse){
+            option (google.api.http) = {
+                put : "v1/cart/{cart_uuid}/cartitem/{cart_item_uuid}"
+            };
+        };
+        rpc RemoveQuantity(RemoveQuantityRequest) returns (CartResponse){
+            option (google.api.http) = {
+                put : "v1/cart/{cart_uuid}/cartitem/{cart_item_uuid}"
+            };
+        };
 
+        rpc CreateAddOn(CreateAddOnRequest) returns (CartResponse){
+            option (google.api.http) = {
+                post : "/v1/cart/{cart_uuid}/cartitem/{cart_item_uuid}/addon"
+                body : "*"
+            };
+        };
+
+        rpc UpdateAddOn(UpdateAddOnRequest) returns (CartResponse){
+            option (google.api.http) = {
+                post : "/v1/cart/{cart_uuid}/cartitem/{cart_item_uuid}/addon/{add_on_uuid}"
+                body : "*"
+            };
+        };
+
+        rpc IncreaseAddOnQuantity(IncreaseAddOnQuantityRequest) returns (CartResponse){
+            option (google.api.http) = {
+                put : "/v1/cart/{cart_uuid}/cartitem/{cart_item_uuid}/addon/{add_on_uuid}/add_quantity"
+            };
+        };
+
+        rpc RemoveAddOnQuantity(RemoveAddOnQuantityRequest) returns (CartResponse){
+            option (google.api.http) = {
+                put : "/v1/cart/{cart_uuid}/cartitem/{cart_item_uuid}/addon/{add_on_uuid}/add_quantity"
+            };
+        };
+
+        rpc ValidateCoupon (ValidCouponResquest) returns (ValidCouponResponse){
+            option (google.api.http) = {
+                get : "v1/cart/{cart_uuid}?couponname={coupon_code}"
+            };
+        };
+        
+        rpc AddCoupon (AddCouponRequest) returns  (CartResponse){
+            option (google.api.http) = {
+                put: "v1/cart/{cart_uuid}/addcoupon?couponname={coupon_code}"
+            };
+        };
+
+        rpc RemoveCoupon (RemoveCouponRequest) returns (CartResponse){
+            option (google.api.http) = {
+                delete : "v1/cart/{cart_uuid}/removecoupon"   
+            };
+        };
+        
+        // Add generate Order once the order service is fixed
+}
+
+enum ORDERTYPE {
+    UNSPECIFIED = 0;
+    DINEIN = 1;
+    TAKEAWAY = 2;
+    DRIVETHRU = 3;
+}
+
+enum CARTSTATE {
+    UNSPECIFIED_STATE =0;
+    ACTIVE = 1;
+    COMPLETED = 2;
+    ABANDONED = 3;
+}
+message Cart{
+
+    string store_uuid = 1;
+    string cart_uuid = 2;
+    string user_phone_no = 3;
+    ORDERTYPE order_type = 4;
+    string table_no = 5;
+    string vehicle_no = 6;
+    string vehicle_description = 7;
+    string coupon_code = 8;
+    string speacial_instructions = 9;
+    repeated CartItem items = 10;
+
+    float total_subtotal = 11; //Sum of all the total amounts of a 
+    float total_discount = 12;
+    float total_price_before_tax = 13;
+    float total_tax = 14;
+    float packaging_cost = 15;
+    float final_amount = 16;
+
+    
+    CARTSTATE cart_state = 17;
+
+
+    google.protobuf.Timestamp created_at = 18;
+    google.protobuf.Timestamp updated_at = 19;
+
+}
+
+message CartItem{
+
+    string cart_item_uuid = 1;
+    string cart_uuid = 2;
+    string product_name =3;
+    string product_uuid = 4;
+    float tax_percentage = 5;
+
+    float unit_price = 6; //Price of a single unit of the item (before any discount or tax).
+    int32 quantity  = 7; //Number of units of the item in the cart.
+    float add_ons_total =8;
+    float subtotal_amount = 9; //unit_price * quantity (total before discounts and tax).
+    float discount_amount = 10; //Discount applied to this specific item.
+    float price_before_tax  = 11; //(subtotal_amount - discount_amount).
+    float tax_amount = 12; //Tax applied to the item.
+    float final_price = 13; //price_before_tax + tax_amount (final amount for the item).
+    
+    float packaging_cost = 14; //Price for Packaging if required
+
+    repeated AddOn add_ons =15;
+}
+
+message AddOn{
+    string cart_item_uuid = 1;
+    string add_on_name = 2;
+    string add_on_uuid = 3;
+    int32 quantity = 4;
+    float unit_price = 5;
+    bool is_free = 6;
+}
+
+message CreateCartRequest{
+    string store_uuid = 1;
+    string user_phone_no = 2;
+    ORDERTYPE order_type = 3;
+    string table_no = 4;
+    string vehicle_no = 5;
+    string vehicle_description = 6;
+}
+
+message CartResponse{
+    Cart cart = 1;
+}
+
+message GetCartRequest{
+
+    optional string store_uuid = 1;
+    optional string user_phone_no =2;
+    optional string cart_uuid =3;
+
+}
+
+message UpdateCartRequest{
+    string store_uuid = 1;
+    string user_phone_no = 2;
+    string cart_uuid = 3;
+    Cart cart = 4;
+}
+
+message DeleteCartRequest{
+    string store_uuid = 1;
+    string user_phone_no = 2;
+    string cart_uuid = 3;
+}
+
+message AddCartItemRequest{
+    string cart_uuid = 1;
+    CartItem cart_item =2;
+}
+message RemoveCartItemRequest{
+    string cart_item_uuid = 1;
+    string cart_uuid = 2;
+}
+message AddQuantityRequest{
+    string cart_uuid = 1;
+    string cart_item_uuid = 2;
+}
+message RemoveQuantityRequest{
+    string cart_uuid = 1;
+    string cart_item_uuid = 2;
+}
+message CreateAddOnRequest{
+    string cart_uuid = 1;
+    string cart_item_uuid =2;
+    AddOn add_on = 3;
+}
+message UpdateAddOnRequest{
+    string cart_uuid = 1;
+    string cart_item_uuid = 2;
+    string add_on_uuid = 3;
+    AddOn add_on = 4;
+}
+message IncreaseAddOnQuantityRequest {
+    string cart_uuid = 1;
+    string cart_item_uuid = 2;
+    string add_on_uuid = 3;
+}
+message RemoveAddOnQuantityRequest {
+    string cart_uuid = 1;
+    string cart_item_uuid = 2;
+    string add_on_uuid = 3;
+}
+message ValidCouponResquest{
+    string cart_uuid = 1;
+    string coupon_code = 2;
+}
+message ValidCouponResponse{
+    bool Valid = 1;
+    string message = 2;
+}
+message AddCouponRequest{
+    string cart_uuid = 1;
+    string Coupon_code = 2;
+}
+message RemoveCouponRequest{
+    string cart_uuid = 1;
 }
 
 service CouponService{
     //COre Coupon service
-    rpc CreateCoupon (CreateCouponRequest) returns (CouponResponse);
-    rpc GetCoupon (GetCouponRequest) returns (CouponResponse);
-    rpc UpdateCoupon (UpdateCouponRequest) returns (CouponResponse);
-    rpc DeleteCoupon (DeleteCouponRequest) returns (Empty);
+    rpc CreateCoupon (CreateCouponRequest) returns (Coupon){
+        option (google.api.http) = {
+            post : "v1/coupon?store_uuid={store_uuid}"
+            body : "*"
+        };
+    };
+    rpc GetCoupon (GetCouponRequest) returns (Coupon){
+        option (google.api.http) = {
+            get : "v1/coupon?coupon_uuid={coupon_uuid}&store_uuid={store_uuid}"
+        };
+    };
+    rpc UpdateCoupon (UpdateCouponRequest) returns (Coupon){
+        option (google.api.http) = {
+            put: "v1/coupon?coupon_uuid={coupon_uuid}&store_uuid={store_uuid}"
+            body: "*"
+        };
+    };
+    rpc DeleteCoupon (DeleteCouponRequest) returns (google.protobuf.Empty){
+        option (google.api.http) = {
+            delete: "v1/coupon?coupon_uuid={coupon_uuid}&store_uuid={store_uuid}"
+        };
+    };
+    rpc listCoupon (listCouponRequest) returns (listCouponResponse){
+        option (google.api.http) = {
+            get : "v1/coupon/list?store_uuid={store_uuid}&page={page}&limit={limit}"
+        };
+    };
+    rpc GetCouponUsage (GetCouponUsageRequest) returns (GetCouponUsageResponse){
+        option (google.api.http) = {
+            get: "v1/couponusage?store_uuid={store_uuid}&coupon_uuid={coupon_uuid}&page={page}&limit={limit}"
+        };
+    };
+}
+
+enum DISCOUNTTYPE{
+    UNSPCIFIED_DISCOUNT = 0;
+    PERCENTAGE = 1;
+    FIXED = 2;
+}
+
+message Coupon{
+
+    string coupon_uuid = 1;
+    string store_uuid = 2;
+    string coupon_code = 3;
+    DISCOUNTTYPE discount_type = 4;
+    
+    google.protobuf.Timestamp valid_from = 5;
+    google.protobuf.Timestamp valid_to = 6;
+
+    int32 usage_limit_per_user = 7;
+    int32 total_usage_limit = 8;
+
+    float discount = 9;
+    float min_spend = 10;
+    bool is_for_new_users = 11;
+    string description = 12;
+    float max_cart_value = 13;
+    bool is_active = 14;
+
+}
+
+message CouponUsage{
+    string usage_uuid = 1;
+    string Coupon_uuid = 2;
+    string user_phone_no =3;
+    google.protobuf.Timestamp used_at = 4;
+    string order_uuid = 5;
     
 }
 
-message Coupon
-{
-    string StoreUuid = 1;
-    string CouponCode = 2;
-    optional google.protobuf.Timestamp VaildFrom  = 3;//It will send data in seconds after Unix Epoch 
-    optional google.protobuf.Timestamp VaildTo = 4;
-    optional float Discount = 5;
-    optional float MinSpend = 6;
-}
-
-message ValidCartResquest{
-    CartIdentifier Cart = 1;
-    string StoreUuid = 2;
-    string CouponCode = 3;
-}
-
 message CreateCouponRequest{
-    Coupon Coupon =1;
+    string store_uuid = 1;
+    Coupon coupon = 2;
 }
-
 message GetCouponRequest{
-    string StoreUuid = 1;
-    string CouponCode = 2;
+    string store_uuid = 1;
+    string coupon_uuid = 2;
 }
-
-message UpdateCouponRequest{
-    string StoreUuid = 1;
-    string CouponCode = 2;
-    Coupon Coupon = 3;
+message UpdateCouponRequest {
+    string store_uuid = 1;
+    string coupon_uuid = 2;
+    Coupon coupon = 3;
 }
-
 message DeleteCouponRequest{
-    string StoreUuid = 1;
-    string CouponCode = 2;
+    string store_uuid = 1;
+    string coupon_uuid = 2;
 }
-
-message CouponResponse {
-    Coupon Coupon = 1;
+message listCouponRequest{
+    string store_uuid = 1;
+    int32 page = 2;
+    int32 limit = 3;
 }
-message ValidCouponResponse{
-    CartResponse Cart = 1;
-    bool valid = 2;
-    optional string ValidationMessage = 3;
+message listCouponResponse{
+    repeated Coupon coupons = 1;
+    int32 next_page = 2;
+    int32 prev_page = 3;
 }
-enum OrderType {
-    Unspecified = 0;
-    DineIn = 1;
-    TakeAway = 2;
-    DriveThru = 3;
+message GetCouponUsageRequest{
+    string store_uuid = 1;
+    string coupon_uuid = 2;
+    int32 page = 3;
+    int32 limit = 4;
 }
-
-message CartItem{
-    string ProductUuid = 1;
-    float Price = 2;
-    int32 Quantity = 3;
-    float Discount = 4;
-    float SubTotal = 5;
+message GetCouponUsageResponse{
+    repeated CouponUsage coupon_usage_list = 1;
+    int32 next_page = 2;
+    int32 prev_page = 3;
 }
-
-message CreateCartRequest {
-    CartIdentifier Cart = 1; 
-        OrderType OrderType = 3;
-        string TableNo = 4;
-        optional string VehicleNo = 5;
-        optional string VehicleDescription = 6;
-        string CouponName = 7;
-}
-
-message CartResponse
-{
-    string StoreUuid = 1;
-    string UserPhoneNo = 2;
-    optional string OrderType = 3;
-    optional string TableNo = 4;
-    optional string VehicleNo = 5;
-    optional string VehicleDescription = 6;
-    optional string CouponName = 7;
-    repeated CartItem Items = 8;
-    optional float TotalAmount = 9;
-}
-
-message CartIdentifier{
-    string StoreUuid = 1;
-    string UserPhoneNo = 2;
-}
-message GetCartRequest{
-    CartIdentifier Cart = 1;
-}
-message UpdateCartRequest{
-
-    CartIdentifier Cart = 1; 
-    OrderType OrderType = 3;
-    optional string TableNo = 4;
-    optional string VehicleNo = 5;
-    optional string VehicleDescription = 6;
-    optional string CouponName = 7;
-}
-
-message AddItemRequest{
-    CartIdentifier Cart = 1;
-    CartItem item = 3;
-}
-
-message RemoveItemRequest{
-    CartIdentifier Cart = 1;
-    string ProductUuid = 3;
-}
-
-message DeleteCartItemRequest{
-    CartIdentifier Cart = 1;
-    string ProductUuid = 3;
-}
-message QuantityRequest
-{
-    CartIdentifier Cart =  1 ;
-    string ProductUuid = 2;
-    int32 Quantity =  3;
-}
-message DeleteCartRequest
-{
-    CartIdentifier Cart = 1;
-}
-
-message Empty{}
