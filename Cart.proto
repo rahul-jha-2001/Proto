@@ -11,57 +11,48 @@ service CartService {
     //Core Cart Service
         rpc CreateCart(CreateCartRequest) returns (CartResponse){
             option (google.api.http) = {
-                post: "v1/cart?store_uuid={store_uuid}&user_phone_no={user_phone_no}"
+                post: "/v1/cart"
                 body: "*"
             };
         };
 
         rpc GetCart(GetCartRequest) returns (CartResponse){
             option (google.api.http) = {
-                get: "v1/cart?store_uuid={store_uuid}&user_phone_no={user_phone_no}"
-                additional_bindings:{
-                    get :"v1/cart?cart_uuid={cart_uuid}"
-                }
+                get: "/v1/cart"
             };
         };
         rpc UpdateCart(UpdateCartRequest) returns  (CartResponse){
             option (google.api.http) ={
-                put: "v1/cart?store_uuid={store_uuid}&user_phone_no={user_phone_no}"
+                put: "/v1/cart"
                 body: "*"
-                additional_bindings:{
-                    put :"v1/cart?cart_uuid={cart_uuid}"
-                    body : "*"
-                }
+                
             };
         };
         rpc DeleteCart(DeleteCartRequest) returns (google.protobuf.Empty){
             option (google.api.http) = {
-                delete: "v1/cart?store_uuid={store_uuid}&user_phone_no={user_phone_no}"
-                additional_bindings: {
-                    delete :"v1/cart?cart_uuid={cart_uuid}"
-                }
+                delete: "/v1/cart"
             };
         };
             //Cart item Service
         rpc AddCartItem(AddCartItemRequest) returns (CartResponse){
             option (google.api.http) = {
-                post:"v1/cart/{cart_uuid}/cartitem"
+                post:"/v1/cart/{cart_uuid}/cartitem"
                 body:"*"
             };
         };
         rpc RemoveCartItem(RemoveCartItemRequest) returns (CartResponse){
             option (google.api.http) = {
-                delete:"v1/cart/{cart_uuid}/cartitem/{cart_item_uuid}"
+                delete:"/v1/cart/{cart_uuid}/cartitem/{cart_item_uuid}"
             };
         };
         rpc AddQuantity(AddQuantityRequest) returns (CartResponse){
             option (google.api.http) = {
-                put : "v1/cart/{cart_uuid}/cartitem/{cart_item_uuid}"
+                put : "/v1/cart/{cart_uuid}/cartitem/{cart_item_uuid}/add_quantity"
             };
         };
         rpc RemoveQuantity(RemoveQuantityRequest) returns (CartResponse){
             option (google.api.http) = {
-                put : "v1/cart/{cart_uuid}/cartitem/{cart_item_uuid}"
+                put : "/v1/cart/{cart_uuid}/cartitem/{cart_item_uuid}/remove_quantity"
             };
         };
 
@@ -79,6 +70,12 @@ service CartService {
             };
         };
 
+        rpc RemoveAddOn(RemoveAddOnRequest) returns (CartResponse){
+            option (google.api.http) = {
+                delete : "/v1/cart/{cart_uuid}/cartitem/{cart_item_uuid}/addon/{add_on_uuid}"
+            };
+        };
+        
         rpc IncreaseAddOnQuantity(IncreaseAddOnQuantityRequest) returns (CartResponse){
             option (google.api.http) = {
                 put : "/v1/cart/{cart_uuid}/cartitem/{cart_item_uuid}/addon/{add_on_uuid}/add_quantity"
@@ -87,25 +84,25 @@ service CartService {
 
         rpc RemoveAddOnQuantity(RemoveAddOnQuantityRequest) returns (CartResponse){
             option (google.api.http) = {
-                put : "/v1/cart/{cart_uuid}/cartitem/{cart_item_uuid}/addon/{add_on_uuid}/add_quantity"
+                put : "/v1/cart/{cart_uuid}/cartitem/{cart_item_uuid}/addon/{add_on_uuid}/remove_quantity"
             };
         };
 
         rpc ValidateCoupon (ValidCouponResquest) returns (ValidCouponResponse){
             option (google.api.http) = {
-                get : "v1/cart/{cart_uuid}?couponname={coupon_code}"
+                get: "/v1/cart/{cart_uuid}/validate_coupon/{coupon_code}"  // Changed from query param to path param
             };
         };
         
         rpc AddCoupon (AddCouponRequest) returns  (CartResponse){
             option (google.api.http) = {
-                put: "v1/cart/{cart_uuid}/addcoupon?couponname={coupon_code}"
+                put: "/v1/cart/{cart_uuid}/coupon/{Coupon_code}"  // Changed from query param to path param
             };
         };
 
         rpc RemoveCoupon (RemoveCouponRequest) returns (CartResponse){
             option (google.api.http) = {
-                delete : "v1/cart/{cart_uuid}/removecoupon"   
+                delete : "/v1/cart/{cart_uuid}/removecoupon"   
             };
         };
         
@@ -246,6 +243,11 @@ message UpdateAddOnRequest{
     string add_on_uuid = 3;
     AddOn add_on = 4;
 }
+message RemoveAddOnRequest{
+    string cart_uuid = 1;
+    string cart_item_uuid = 2;
+    string add_on_uuid = 3;
+}
 message IncreaseAddOnQuantityRequest {
     string cart_uuid = 1;
     string cart_item_uuid = 2;
@@ -276,34 +278,34 @@ service CouponService{
     //COre Coupon service
     rpc CreateCoupon (CreateCouponRequest) returns (Coupon){
         option (google.api.http) = {
-            post : "v1/coupon?store_uuid={store_uuid}"
+            post : "/v1/coupon"
             body : "*"
         };
     };
     rpc GetCoupon (GetCouponRequest) returns (Coupon){
         option (google.api.http) = {
-            get : "v1/coupon?coupon_uuid={coupon_uuid}&store_uuid={store_uuid}"
+            get : "/v1/coupon"
         };
     };
     rpc UpdateCoupon (UpdateCouponRequest) returns (Coupon){
         option (google.api.http) = {
-            put: "v1/coupon?coupon_uuid={coupon_uuid}&store_uuid={store_uuid}"
+            put: "/v1/coupon"
             body: "*"
         };
     };
     rpc DeleteCoupon (DeleteCouponRequest) returns (google.protobuf.Empty){
         option (google.api.http) = {
-            delete: "v1/coupon?coupon_uuid={coupon_uuid}&store_uuid={store_uuid}"
+            delete: "/v1/coupon"
         };
     };
     rpc listCoupon (listCouponRequest) returns (listCouponResponse){
         option (google.api.http) = {
-            get : "v1/coupon/list?store_uuid={store_uuid}&page={page}&limit={limit}"
+            get : "/v1/coupon/list"
         };
     };
     rpc GetCouponUsage (GetCouponUsageRequest) returns (GetCouponUsageResponse){
         option (google.api.http) = {
-            get: "v1/couponusage?store_uuid={store_uuid}&coupon_uuid={coupon_uuid}&page={page}&limit={limit}"
+            get: "/v1/couponusage"
         };
     };
 }
