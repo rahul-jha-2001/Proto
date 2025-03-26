@@ -2,32 +2,81 @@ syntax = "proto3";
 
 package Order_v1;
 import "google/protobuf/timestamp.proto";
+import "annotations.proto";
 option go_package = "/order;order";
 
+// Service Definition
+service OrderService {
+    rpc CreateOrder (CreateOrderRequest) returns (StoreOrderResponse)
+    {
+        option (google.api.http) = {
+            post: "/order/store/{store_uuid}/user/{user_phone_no}"
+            body: "*"
+        };
+    };
 
+    rpc GetOrder (GetOrderRequest) returns (StoreOrderResponse){
+        option (google.api.http) = {
+            get: "/order/store/{store_uuid}/user/{user_phone_no}/{order_uuid}"
+        };
+    };
 
-service OrderService{
-    // Core order service 
-        rpc CreateOrder (CreateOrderRequest) returns(OrderResponse);
-        rpc GetOrder (GetOrderRequest) returns (OrderResponse);
-        rpc UpdateOrder (UpdateOrderRequest) returns (OrderResponse);
-        rpc DeleteOrder (DeleteOrderRequest) returns (empty);
-        rpc ListOrder (ListOrderRequest) returns (ListOrderResponse);
+    rpc UpdateOrder (UpdateOrderRequest) returns (StoreOrderResponse){
+        option (google.api.http) = {
+            put: "/order/store/{store_uuid}/user/{user_phone_no}/{order_uuid}"
+            body: "*"
+        };
+    };
+    rpc DeleteOrder (DeleteOrderRequest) returns (Empty){
+        option (google.api.http) = {
+            delete: "/order/store/{store_uuid}/user/{user_phone_no}/{order_uuid}"
+        };
+    };
+    rpc ListOrder (ListOrderRequest) returns (ListStoreOrderResponse){
+        option (google.api.http) = {
+            get: "/order/store/{store_uuid}/"
+        };
+    };
+
+    rpc GetUserOrder (GetUserOrderRequest) returns (UserOrderResponse){
+        option (google.api.http) = {
+            get: "/order/user/{user_phone_no}/store/{store_uuid}/{order_uuid}"
+        };
+    };
+
+    rpc listUserOrder (ListUserOrderRequest) returns (ListUserOrderResponse){
+        option (google.api.http) = {
+            get: "/order/user/{user_phone_no}/store/{store_uuid}"
+        };
+    };
 }
 
+// Enums
 enum OrderState {
     ORDER_STATE_UNSPECIFIED = 0;
     ORDER_STATE_PAYMENT_PENDING = 1;
-    ORDER_STATE_COMPLETE = 2;
-    ORDER_STATE_CANCELED = 3;
-    ORDER_STATE_PLACED = 4;
+    ORDER_STATE_PLACED = 2;
+    ORDER_STATE_PREPARING = 3;
+    ORDER_STATE_READY = 4;
+    ORDER_STATE_COMPLETED = 5;
+    ORDER_STATE_CANCELED = 6;
 }
 
 enum PaymentState {
     PAYMENT_STATE_UNSPECIFIED = 0;
-    PAYMENT_STATE_COMPLETE = 1;
-    PAYMENT_STATE_FAILED = 2;
-    PAYMENT_STATE_PENDING = 3;
+    PAYMENT_STATE_PENDING = 1;
+    PAYMENT_STATE_COMPLETE = 2;
+    PAYMENT_STATE_FAILED = 3;
+    PAYMENT_STATE_REFUNDED = 4;
+}
+
+enum PaymentMethod {
+    PAYMENT_METHOD_UNSPECIFIED = 0;
+    PAYMENT_METHOD_RAZORPAY = 1;
+    PAYMENT_METHOD_CASH = 2;
+    PAYMENT_METHOD_CARD = 3;
+    PAYMENT_METHOD_UPI = 4;
+    PAYMENT_METHOD_NETBANKING = 5;
 }
 
 enum OrderType {
@@ -37,65 +86,180 @@ enum OrderType {
     ORDER_TYPE_DRIVE_THRU = 3;
 }
 
-message Order{
+// Messages
+message OrderStoreView {
+    string order_uuid = 1;        // Primary key
+    string public_so = 2;         // Public order number
+    string store_uuid = 3;
+    string user_phone_no = 4;
+    OrderType order_type = 5;
+    optional string table_no = 6;
+    optional string vehicle_no = 7;
+    optional string vehicle_description = 8;
+    optional string coupon_code = 9;
+    repeated OrderItem items = 10;
+    string special_instructions = 11;
+    OrderState order_status = 12;
+    OrderPayment payment = 13;
 
-    string OrderUuid = 1;
-    string StoreUuid = 2;
-    string UserPhoneNo = 3;
-    OrderType OrderType = 4;
-    optional string TableNo = 5;
-    optional string VehicleNo = 6;
-    optional string VehicleDescription = 7;
-    optional string CouponName = 8;
-    repeated OrderItem Items = 9;
-    float TotalAmount = 10;
-    float DiscountAmount = 11;
-    float FinalAmount = 12;
+    // Financial fields
+    float subtotal_amount = 15;
+    float discount_amount = 16;
+    float price_before_tax = 17;
+    float tax_amount = 18;
+    float packaging_cost = 19;
+    float final_amount = 20;       // Added from model property
 
-    PaymentState PaymentState = 13;
-    string PaymentMethod = 14;
+    google.protobuf.Timestamp created_at = 22;
+    google.protobuf.Timestamp updated_at = 23;
+    string cart_uuid = 24;
+}
 
-    optional string SpecialInstruction = 15;
+message OrderUserView {
+    string order_uuid = 1;        // Primary key
+    string public_so = 2;         // Public order number
+    string store_uuid = 3;
+    string user_phone_no = 4;
+    OrderType order_type = 5;
+    optional string table_no = 6;
+    optional string vehicle_no = 7;
+    optional string vehicle_description = 8;
+    optional string coupon_code = 9;
+    repeated OrderItem items = 10;
+    string special_instructions = 11;
+    OrderState order_status = 12;
+    PaymentState payment_status = 13;
+    string payment_method = 14;
 
-    OrderState OrderStatus = 16;
+    // Financial fields
+    float subtotal_amount = 15;
+    float discount_amount = 16;
+    float price_before_tax = 17;
+    float tax_amount = 18;
+    float packaging_cost = 19;
+    float final_amount = 20;
+
+    google.protobuf.Timestamp created_at = 22;
+    google.protobuf.Timestamp updated_at = 23;
+}
+
+message OrderItem {
+    string item_uuid = 1;
+    string product_uuid = 2;
+    string product_name = 3;
+    float unit_price = 4;
+    int32 quantity = 5;
+    float discount = 6;          // Percentage
+    float tax_percentage = 7;
+    float packaging_cost = 8;
     
-    google.protobuf.Timestamp CreatedAt = 17;
-    google.protobuf.Timestamp UpdatedAt = 18;
+    // Calculated amounts
+    float subtotal_amount = 9;
+    float discount_amount = 10;
+    float price_before_tax = 11;
+    float tax_amount = 12;
+    float final_price = 13;
     
+    repeated OrderItemAddOn add_ons = 14;
 }
 
-message CreateOrderRequest{
-    Order Order = 1;
-}
-message OrderResponse{
-    bool Success = 1;
-    Order Order = 2;
-}
-message GetOrderRequest{
-    string OrderUuid  = 1;
-}
-message UpdateOrderRequest{
-    string OrderUuid = 1;
-    Order Order = 2;
-}
-message DeleteOrderRequest{
-    string OrderUuid = 1;
-}
-message ListOrderRequest{
-    string StoreUuid = 1;
-    string UserPhoneNo =2;
-}
-message ListOrderResponse{
-    repeated Order Orders =1;
+message OrderItemAddOn {
+    string add_on_uuid = 1;
+    string add_on_name = 2;
+    int32 quantity = 3;
+    float unit_price = 4;
+    bool is_free = 5;
+    float subtotal_amount = 6;
 }
 
-message OrderItem{
-    string ProductUuid = 1;
-    float Price = 2;
-    int32 Quantity = 3;
-    float Discount = 4;
-    float SubTotal = 5;
-    float TaxedAmount  = 6;
-    float DiscountAmount = 7;
+// Payment & History (if needed for responses)
+message OrderPayment {
+    string payment_uuid = 1;
+    optional string rz_order_uuid = 2;
+    optional string rz_payment_uuid = 3;
+    optional string rz_signature = 4;
+    float amount = 5;
+    PaymentState payment_status = 6;
+    PaymentMethod payment_method = 7;
+    string notes = 8;
+
+    google.protobuf.Timestamp payment_time = 9;
 }
-message empty{}
+
+message OrderHistory {
+    string history_uuid = 1;
+    OrderState previous_status = 2;
+    OrderState new_status = 3;
+    google.protobuf.Timestamp changed_at = 4;
+    string changed_by = 5;
+}
+
+// Request/Response Structures
+message CreateOrderRequest {
+    string store_uuid = 1;
+    string user_phone_no = 2;
+    OrderStoreView order = 3;
+}
+
+message GetUserOrderRequest {
+    string order_uuid = 1;
+    string store_uuid = 2;
+    string user_phone_no = 3;
+}
+
+message UserOrderResponse {
+    OrderUserView order = 1;
+}
+message StoreOrderResponse {
+    OrderStoreView order = 1;
+}
+message ListUserOrderRequest {
+    string store_uuid = 1;
+    string user_phone_no = 2;
+    int32 limit = 3;
+    int32 page = 4;
+}
+
+message ListUserOrderResponse {
+    repeated OrderUserView orders = 1;
+    int32 next_page = 2;
+    int32 prev_page = 3;
+}
+
+message OrderResponse {;
+    OrderStoreView order = 1;
+}
+
+message GetOrderRequest {
+    string order_uuid = 1;
+    string store_uuid = 2;
+    string user_phone_no = 3;
+}
+
+message UpdateOrderRequest {
+    string order_uuid = 1;
+    string store_uuid = 2;
+    string user_phone_no = 3;
+    OrderStoreView order = 4;
+}
+
+message DeleteOrderRequest {
+    string order_uuid = 1;
+    string store_uuid = 2;
+    string user_phone_no = 3;
+}
+
+message ListOrderRequest {
+    string store_uuid = 1;
+    string user_phone_no = 2;
+    int32 limit = 3;
+    int32 page = 4;
+}
+
+message ListOrderResponse {
+    repeated OrderStoreView orders = 1;
+    int32 next_page = 2;
+    int32 prev_page = 3;
+}
+
+message Empty {}
