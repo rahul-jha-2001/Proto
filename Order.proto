@@ -5,6 +5,35 @@ import "google/protobuf/timestamp.proto";
 import "annotations.proto";
 option go_package = "/order;order";
 
+
+
+// User Flow 
+// 1. User creates a cart
+// 2. user Checkout the cart
+// 3. Cart_uuid is snet to the Paymment Service 
+// 4. Payment servic calls the cart and validates and locks the cart
+// 5. Payment servic sends mess to order service with the cart_uuid 
+// 6. Order service Validates the cart and creates the order
+
+// Store Flow
+// 2. store creates a cart
+// 3. store adds items to the cart
+// 4. store checks out the cart
+// 5. store Calls order sevice with cart_uuid
+// 6. Order service validates the cart and creates the order
+
+// or 
+
+// Store Flow
+// 2. store creates a cart
+// 3. store adds items to the cart
+// 4. store checks out the cart
+// 5. store Calls payment_service with cart_uuid and payment_method as cash
+// 6. Payment service validates the cart and creates the order
+// 7. Payment service sends message to order service with the cart_uuid
+// 8. Order service validates the cart and creates the order
+
+
 // Service Definition
 service OrderService {
     rpc CreateOrder (CreateOrderRequest) returns (StoreOrderResponse)
@@ -21,15 +50,10 @@ service OrderService {
         };
     };
 
-    rpc UpdateOrder (UpdateOrderRequest) returns (StoreOrderResponse){
+    rpc CancelOrder (DeleteOrderRequest) returns (StoreOrderResponse){
         option (google.api.http) = {
-            put: "/order/store/{store_uuid}/user/{user_phone_no}/{order_uuid}"
+            put: "/order/store/{store_uuid}/user/{user_phone_no}/{order_uuid}/cancel"
             body: "*"
-        };
-    };
-    rpc DeleteOrder (DeleteOrderRequest) returns (Empty){
-        option (google.api.http) = {
-            delete: "/order/store/{store_uuid}/user/{user_phone_no}/{order_uuid}"
         };
     };
     rpc ListOrder (ListOrderRequest) returns (ListStoreOrderResponse){
@@ -119,25 +143,22 @@ message OrderUserView {
     string order_uuid = 1;        // Primary key
     string public_so = 2;         // Public order number
     string store_uuid = 3;
-    string user_phone_no = 4;
-    OrderType order_type = 5;
-    optional string table_no = 6;
-    optional string vehicle_no = 7;
-    optional string vehicle_description = 8;
-    optional string coupon_code = 9;
-    repeated OrderItem items = 10;
-    string special_instructions = 11;
-    OrderState order_status = 12;
-    PaymentState payment_status = 13;
-    string payment_method = 14;
+    string cart_uuid = 4;
+    string user_phone_no = 5;
+    OrderType order_type = 6;
+    string table_no = 7;
+    string vehicle_no = 8;
+    string vehicle_description = 9;
+    string coupon_code = 10;
+    string speacial_instructions = 11;
+    repeated OrderItem items = 12;
 
-    // Financial fields
-    float subtotal_amount = 15;
-    float discount_amount = 16;
-    float price_before_tax = 17;
-    float tax_amount = 18;
-    float packaging_cost = 19;
-    float final_amount = 20;
+    float total_subtotal = 13; //Sum of all the total amounts of a 
+    float total_discount = 14;
+    float total_price_before_tax = 15;
+    float total_tax = 16;
+    float packaging_cost = 17;
+    float final_amount = 18; //Sum of all the final amounts of all the items in the cart.
 
     google.protobuf.Timestamp created_at = 22;
     google.protobuf.Timestamp updated_at = 23;
@@ -145,31 +166,30 @@ message OrderUserView {
 
 message OrderItem {
     string item_uuid = 1;
-    string product_uuid = 2;
-    string product_name = 3;
-    float unit_price = 4;
-    int32 quantity = 5;
-    float discount = 6;          // Percentage
-    float tax_percentage = 7;
-    float packaging_cost = 8;
+    string product_name =2;
+    string product_uuid = 3;
+    float tax_percentage = 4;
+
+    float unit_price = 5; //Price of a single unit of the item (before any discount or tax).
+    int32 quantity  = 6; //Number of units of the item in the cart.
+    float add_ons_total =7;
+    float subtotal_amount = 8; //unit_price * quantity (total before discounts and tax).
+    float discount_amount = 9; //Discount applied to this specific item.
+    float price_before_tax  = 10; //(subtotal_amount - discount_amount).
+    float tax_amount = 11; //Tax applied to the item.
+    float final_price = 12; //price_before_tax + tax_amount (final amount for the item).
     
-    // Calculated amounts
-    float subtotal_amount = 9;
-    float discount_amount = 10;
-    float price_before_tax = 11;
-    float tax_amount = 12;
-    float final_price = 13;
-    
-    repeated OrderItemAddOn add_ons = 14;
+    float packaging_cost = 13; //Price for Packaging if required
+
+    repeated OrderItemAddOn add_ons =14;
 }
 
 message OrderItemAddOn {
-    string add_on_uuid = 1;
-    string add_on_name = 2;
+    string add_on_name = 1;
+    string add_on_uuid = 2;
     int32 quantity = 3;
     float unit_price = 4;
     bool is_free = 5;
-    float subtotal_amount = 6;
 }
 
 // Payment & History (if needed for responses)
@@ -186,19 +206,13 @@ message OrderPayment {
     google.protobuf.Timestamp payment_time = 9;
 }
 
-message OrderHistory {
-    string history_uuid = 1;
-    OrderState previous_status = 2;
-    OrderState new_status = 3;
-    google.protobuf.Timestamp changed_at = 4;
-    string changed_by = 5;
-}
+
 
 // Request/Response Structures
 message CreateOrderRequest {
     string store_uuid = 1;
     string user_phone_no = 2;
-    OrderStoreView order = 3;
+    string cart_uuid = 3;
 }
 
 message GetUserOrderRequest {
