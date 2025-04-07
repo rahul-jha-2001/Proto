@@ -50,15 +50,28 @@ service OrderService {
         };
     };
 
-    rpc CancelOrder (DeleteOrderRequest) returns (StoreOrderResponse){
+    rpc CancelOrder (CancelOrderRequest) returns (StoreOrderResponse){
         option (google.api.http) = {
             put: "/order/store/{store_uuid}/user/{user_phone_no}/{order_uuid}/cancel"
             body: "*"
         };
     };
-    rpc ListOrder (ListOrderRequest) returns (ListStoreOrderResponse){
+    rpc ListOrder (ListStoreOrderRequest) returns (ListStoreOrderResponse){
         option (google.api.http) = {
             get: "/order/store/{store_uuid}/"
+        };
+    };
+
+    rpc StreamOrders (StreamOrderRequest) returns (stream StoreOrderResponse){
+        option (google.api.http) = {
+            get: "/order/store/{store_uuid}/stream"
+        };
+    };
+
+    rpc UpdateOrderState (UpdateOrderStateRequest) returns (StoreOrderResponse){
+        option (google.api.http) = {
+            put :"/order/store/{store_uuid}/order/{order_uuid}"
+            body: "*"
         };
     };
 
@@ -71,6 +84,12 @@ service OrderService {
     rpc listUserOrder (ListUserOrderRequest) returns (ListUserOrderResponse){
         option (google.api.http) = {
             get: "/order/user/{user_phone_no}/store/{store_uuid}"
+        };
+    };
+
+    rpc CancelUserOrder (CancelUserOrderRequest) returns (UserOrderResponse){
+        option (google.api.http) = {
+            get: "/order/user/{user_phone_no}/store/{store_uuid}/{order_uuid}/cancel"
         };
     };
 }
@@ -113,7 +132,7 @@ enum OrderType {
 // Messages
 message OrderStoreView {
     string order_uuid = 1;        // Primary key
-    string public_so = 2;         // Public order number
+    string order_no = 2;         // Public order number
     string store_uuid = 3;
     string user_phone_no = 4;
     OrderType order_type = 5;
@@ -141,7 +160,7 @@ message OrderStoreView {
 
 message OrderUserView {
     string order_uuid = 1;        // Primary key
-    string public_so = 2;         // Public order number
+    string order_no = 2;         // Public order number
     string store_uuid = 3;
     string cart_uuid = 4;
     string user_phone_no = 5;
@@ -150,26 +169,32 @@ message OrderUserView {
     string vehicle_no = 8;
     string vehicle_description = 9;
     string coupon_code = 10;
-    string speacial_instructions = 11;
-    repeated OrderItem items = 12;
+    string special_instructions = 11;
+    OrderState order_status = 21;
+    PaymentMethod payment_method = 12;
+    PaymentState payment_state = 13;
+    
+    repeated OrderItem items = 14;
 
-    float total_subtotal = 13; //Sum of all the total amounts of a 
-    float total_discount = 14;
-    float total_price_before_tax = 15;
-    float total_tax = 16;
-    float packaging_cost = 17;
-    float final_amount = 18; //Sum of all the final amounts of all the items in the cart.
+    float total_subtotal = 15; //Sum of all the total amounts of a 
+    float total_discount = 16;
+    float total_price_before_tax = 17;
+    float total_tax = 18;
+    float packaging_cost = 19;
+    float final_amount = 20; //Sum of all the final amounts of all the items in the cart.
 
     google.protobuf.Timestamp created_at = 22;
     google.protobuf.Timestamp updated_at = 23;
 }
 
 message OrderItem {
+    
     string item_uuid = 1;
     string product_name =2;
     string product_uuid = 3;
     float tax_percentage = 4;
 
+    float discount = 15;    
     float unit_price = 5; //Price of a single unit of the item (before any discount or tax).
     int32 quantity  = 6; //Number of units of the item in the cart.
     float add_ons_total =7;
@@ -190,19 +215,19 @@ message OrderItemAddOn {
     int32 quantity = 3;
     float unit_price = 4;
     bool is_free = 5;
+    float subtotal_amount = 6;
 }
 
 // Payment & History (if needed for responses)
 message OrderPayment {
     string payment_uuid = 1;
-    optional string rz_order_uuid = 2;
-    optional string rz_payment_uuid = 3;
+    optional string rz_order_id = 2;
+    optional string rz_payment_id = 3;
     optional string rz_signature = 4;
     float amount = 5;
     PaymentState payment_status = 6;
     PaymentMethod payment_method = 7;
     string notes = 8;
-
     google.protobuf.Timestamp payment_time = 9;
 }
 
@@ -219,15 +244,39 @@ message GetUserOrderRequest {
     string order_uuid = 1;
     string store_uuid = 2;
     string user_phone_no = 3;
+    string order_no = 4;
 }
 
-message UserOrderResponse {
+message CancelOrderRequest{
+    string store_uuid = 1;
+    string user_phone_no = 2;
+    string order_uuid =3;
+    string order_no = 4;
+}
+message ListStoreOrderRequest{
+    string store_uuid = 1;
+    string user_phone_no = 2;
+    int32 limit = 3;
+    int32 page = 4;
+}
+
+message StreamOrderRequest{
+    string store_uuid = 1;
+}
+
+message ListStoreOrderResponse{
+    repeated OrderStoreView orders = 1;
+    int32 next_page = 2;
+    int32 prev_page = 3;
+}
+
+message UserOrderResponse{
     OrderUserView order = 1;
 }
-message StoreOrderResponse {
+message StoreOrderResponse{
     OrderStoreView order = 1;
 }
-message ListUserOrderRequest {
+message ListUserOrderRequest{
     string store_uuid = 1;
     string user_phone_no = 2;
     int32 limit = 3;
@@ -240,7 +289,7 @@ message ListUserOrderResponse {
     int32 prev_page = 3;
 }
 
-message OrderResponse {;
+message OrderResponse {
     OrderStoreView order = 1;
 }
 
@@ -248,19 +297,27 @@ message GetOrderRequest {
     string order_uuid = 1;
     string store_uuid = 2;
     string user_phone_no = 3;
+    string order_no = 4;
 }
 
-message UpdateOrderRequest {
+message UpdateOrderStateRequest {
     string order_uuid = 1;
     string store_uuid = 2;
-    string user_phone_no = 3;
-    OrderStoreView order = 4;
+    OrderState order_state = 3;
 }
 
 message DeleteOrderRequest {
     string order_uuid = 1;
     string store_uuid = 2;
     string user_phone_no = 3;
+    string order_no = 4;
+}
+
+message CancelUserOrderRequest{
+    string store_uuid = 1;
+    string user_phone_no = 2;
+    string order_no = 3;
+    string order_uuid = 4;
 }
 
 message ListOrderRequest {
@@ -277,3 +334,25 @@ message ListOrderResponse {
 }
 
 message Empty {}
+
+//      -------------------------------------------------------------
+//      |                                                           |
+//      |       KAFKA MESSAGE PROTOBUFS                             |
+//      |                                                           |
+//      -------------------------------------------------------------
+
+enum OrderOpration{
+    ORDER_OP_UNSPECIFIED = 0;
+    ORDER_OP_CREATE = 1;
+    ORDER_OP_UPDATE = 2;
+}
+
+message KafkaOrderMessage{
+    string cart_uuid = 1;
+    string store_uuid = 2;
+    string user_phone_no = 3;
+    OrderPayment payment =4;
+    OrderState order_status = 5;
+    OrderOpration operation = 6;   
+}
+
