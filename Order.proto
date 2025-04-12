@@ -39,57 +39,57 @@ service OrderService {
     rpc CreateOrder (CreateOrderRequest) returns (StoreOrderResponse)
     {
         option (google.api.http) = {
-            post: "/order/store/{store_uuid}/user/{user_phone_no}"
+            post: "/store/{store_uuid}/order"
             body: "*"
         };
     };
 
     rpc GetOrder (GetOrderRequest) returns (StoreOrderResponse){
         option (google.api.http) = {
-            get: "/order/store/{store_uuid}/user/{user_phone_no}/{order_uuid}"
+            get: "/store/{store_uuid}/user/{user_phone_no}/order/{order_uuid}"
         };
     };
 
     rpc CancelOrder (CancelOrderRequest) returns (StoreOrderResponse){
         option (google.api.http) = {
-            put: "/order/store/{store_uuid}/user/{user_phone_no}/{order_uuid}/cancel"
+            put: "/store/{store_uuid}/user/{user_phone_no}/order/{order_uuid}/cancel"
             body: "*"
         };
     };
     rpc ListOrder (ListStoreOrderRequest) returns (ListStoreOrderResponse){
         option (google.api.http) = {
-            get: "/order/store/{store_uuid}/"
+            get: "/store/{store_uuid}/orders"
         };
     };
 
     rpc StreamOrders (StreamOrderRequest) returns (stream StoreOrderResponse){
         option (google.api.http) = {
-            get: "/order/store/{store_uuid}/stream"
+            get: "/store/{store_uuid}/order/stream"
         };
     };
 
     rpc UpdateOrderState (UpdateOrderStateRequest) returns (StoreOrderResponse){
         option (google.api.http) = {
-            put :"/order/store/{store_uuid}/order/{order_uuid}"
+            put :"/store/{store_uuid}/order/{order_uuid}"
             body: "*"
         };
     };
 
     rpc GetUserOrder (GetUserOrderRequest) returns (UserOrderResponse){
         option (google.api.http) = {
-            get: "/order/user/{user_phone_no}/store/{store_uuid}/{order_uuid}"
+            get: "/user/{user_phone_no}/store/{store_uuid}/order/{order_uuid}"
         };
     };
 
     rpc listUserOrder (ListUserOrderRequest) returns (ListUserOrderResponse){
         option (google.api.http) = {
-            get: "/order/user/{user_phone_no}/store/{store_uuid}"
+            get: "/user/{user_phone_no}/store/{store_uuid}/orders"
         };
     };
 
     rpc CancelUserOrder (CancelUserOrderRequest) returns (UserOrderResponse){
         option (google.api.http) = {
-            get: "/order/user/{user_phone_no}/store/{store_uuid}/{order_uuid}/cancel"
+            get: "/user/{user_phone_no}/store/{store_uuid}/order/{order_uuid}/cancel"
         };
     };
 }

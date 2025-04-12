@@ -76,99 +76,99 @@ service ProductService {
   // Categories
   rpc CreateCategory (CreateCategoryRequest) returns (CategoryResponse) {
     option (google.api.http) = {
-      post: "/v1/stores/{store_uuid}/categories"
+      post: "/v1/store/{store_uuid}/category"
       body: "*"
     };
   };
 
   rpc UpdateCategory (UpdateCategoryRequest) returns (CategoryResponse) {
     option (google.api.http) = {
-      patch: "/v1/stores/{store_uuid}/categories/{category_uuid}"
+      patch: "/v1/store/{store_uuid}/category/{category_uuid}"
       body: "*"
     };
   };
 
   rpc GetCategory (GetCategoryRequest) returns (CategoryResponse) {
     option (google.api.http) = {
-      get: "/v1/stores/{store_uuid}/categories/{category_uuid}"
+      get: "/v1/store/{store_uuid}/category/{category_uuid}"
     };
   };
 
   rpc ListCategory (ListCategoryRequest) returns (ListCategoryResponse) {
     option (google.api.http) = {
-      get: "/v1/stores/{store_uuid}/categories"
+      get: "/v1/store/{store_uuid}/category/list"
     };
   };
 
   rpc DeleteCategory (DeleteCategoryRequest) returns (DeleteCategoryResponse) {
     option (google.api.http) = {
-      delete: "/v1/stores/{store_uuid}/categories/{category_uuid}"
+      delete: "/v1/store/{store_uuid}/category/{category_uuid}"
     };
   };
 
   // Products
   rpc CreateProduct (CreateProductRequest) returns (ProductResponse) {
     option (google.api.http) = {
-      post: "/v1/stores/{store_uuid}/categories/{category_uuid}/products"
+      post: "/v1/store/{store_uuid}/category/{category_uuid}/product"
       body: "*"
     };
   };
 
   rpc GetProduct (GetProductRequest) returns (ProductResponse) {
     option (google.api.http) = {
-      get: "/v1/stores/{store_uuid}/categories/{category_uuid}/products/{product_uuid}"
+      get: "/v1/store/{store_uuid}/category/{category_uuid}/product/{product_uuid}"
     };
   };
 
   rpc UpdateProduct (UpdateProductRequest) returns (ProductResponse) {
     option (google.api.http) = {
-      patch: "/v1/stores/{store_uuid}/categories/{category_uuid}/products/{product_uuid}"
+      patch: "/v1/store/{store_uuid}/category/{category_uuid}/product/{product_uuid}"
       body: "*"
     };
   };
 
   rpc DeleteProduct (DeleteProductRequest) returns (DeleteProductResponse) {
     option (google.api.http) = {
-      delete: "/v1/stores/{store_uuid}/categories/{category_uuid}/products/{product_uuid}"
+      delete: "/v1/store/{store_uuid}/category/{category_uuid}/product/{product_uuid}"
     };
   };
 
   rpc ListProducts (ListProductsRequest) returns (ListProductsResponse) {
     option (google.api.http) = {
-      get: "/v1/stores/{store_uuid}/categories/{category_uuid}/products"
+      get: "/v1/store/{store_uuid}/category/{category_uuid}/product"
     };
   };
 
   // Add-ons
   rpc CreateAddOn (CreateAddOnRequest) returns (AddOnResponse) {
     option (google.api.http) = {
-      post: "/v1/stores/{store_uuid}/products/{product_uuid}/add_ons"
+      post: "/v1/store/{store_uuid}/product/{product_uuid}/add_ons"
       body: "add_on"
     };
   };
 
   rpc GetAddOn (GetAddOnRequest) returns (AddOnResponse) {
     option (google.api.http) = {
-      get: "/v1/stores/{store_uuid}/products/{product_uuid}/add_ons/{add_on_uuid}"
+      get: "/v1/store/{store_uuid}/product/{product_uuid}/add_on/{add_on_uuid}"
     };
   };
 
   rpc UpdateAddOn (UpdateAddOnRequest) returns (AddOnResponse) {
     option (google.api.http) = {
-      put: "/v1/stores/{store_uuid}/products/{product_uuid}/add_ons/{add_on_uuid}"
+      put: "/v1/store/{store_uuid}/product/{product_uuid}/add_on/{add_on_uuid}"
       body: "add_on"
     };
   };
 
   rpc DeleteAddOn (DeleteAddOnRequest) returns (DeleteAddOnResponse) {
     option (google.api.http) = {
-      delete: "/v1/stores/{store_uuid}/products/{product_uuid}/add_ons/{add_on_uuid}"
+      delete: "/v1/store/{store_uuid}/product/{product_uuid}/add_on/{add_on_uuid}"
     };
   };
 
   rpc ListAddOn (ListAddOnRequest) returns (ListAddOnResponse) {
     option (google.api.http) = {
-      get: "/v1/stores/{store_uuid}/products/{product_uuid}/add_ons"
+      get: "/v1/store/{store_uuid}/product/{product_uuid}/add_on/list"
     };
   };
 }
