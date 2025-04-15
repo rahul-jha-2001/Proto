@@ -4,76 +4,74 @@ package product_v1;
 
 import "google/protobuf/timestamp.proto";
 import "annotations.proto";
+import "google/protobuf/empty.proto";
 option go_package = "/product;product";
 
 
 
 
 enum Productstatus{
-
-    DRAFT = 0;
-    ACTIVE = 1;
-    INACTIVE =2;
-
+    PRODUCT_STATE_DRAFT = 0;
+    PRODUCT_STATE_ACTIVE = 1;
+    PRODUCT_STATE_INACTIVE =2;
+    PRODUCT_STATE_OUT_OF_STOCK = 3;
 }
 
 message category 
 {
-    optional string category_uuid = 1;
-    optional string store_uuid =2;
-    optional string name =3;
-    optional string description = 4;
-    optional int32 display_order =5;
-    optional bool is_available = 6;
-    optional bool is_active = 7;
-    
+    string category_uuid = 1;
+    string store_uuid =2;
+    string name =3;
+    string description = 4;
+    int32 display_order =5;
+    bool is_available = 6;
+    bool is_active = 7;
     google.protobuf.Timestamp created_at =8;
     google.protobuf.Timestamp updated_at = 9;
-
-
 }
 
 message add_on{
-    optional string add_on_uuid = 1;
-    optional string name =2;
-    optional bool is_available =3;
-    optional int32 max_selectable = 4;
-    optional float GST_percentage =5;
-    optional float price = 6;
-    optional string product_uuid = 7;
-    optional google.protobuf.Timestamp created_at = 8;
-    // Timestamp of last status update
-    optional google.protobuf.Timestamp updated_at = 9;
+     string add_on_uuid = 1;
+     string name =2;
+     bool is_available =3;
+     int32 max_selectable = 4;
+     float GST_percentage =5;
+     float price = 6;
+     string product_uuid = 7;
+     google.protobuf.Timestamp created_at = 8;
+     google.protobuf.Timestamp updated_at = 9;
 
 }
 
 message product
 {
-    optional string product_uuid = 1;
+    string product_uuid = 1;
     string store_uuid = 2;
-    optional string name = 3;
-    optional string description = 4;
-    optional Productstatus status =5;
-    optional bool is_available = 6;
-    optional float display_price =7;
-    optional float price = 8;
-    optional float GST_percentage = 9;
-    optional string category_uuid = 10;
-    optional string dietary_pref =11;
-    optional string image_URL = 12;
-    optional google.protobuf.Timestamp created_at = 13;
-    // Timestamp of last status update
-    optional google.protobuf.Timestamp updated_at = 14;
+    string name = 3;
+    string description = 4;
+    Productstatus status =5;
+    bool is_available = 6;
+    float display_price =7;
+    float price = 8;
+    float GST_percentage = 9;
+    category category = 10;
+    repeated dietary_preference dietary_pref =11;
+    string image_URL = 12;
+    repeated add_on add_ons = 13;
+    google.protobuf.Timestamp created_at = 14;
+    google.protobuf.Timestamp updated_at = 15;
 }
 
-message error {
-    string error_message =1;
-    string error_code = 2;
+message dietary_preference
+{
+  string store_uuid = 1;
+  string diet_pref_uuid = 2;
+  string name = 3;
+  string description = 4;
+  string icon_url = 5;
 }
-
 
 service ProductService {
-  // Categories
   rpc CreateCategory (CreateCategoryRequest) returns (CategoryResponse) {
     option (google.api.http) = {
       post: "/v1/store/{store_uuid}/category"
@@ -100,7 +98,7 @@ service ProductService {
     };
   };
 
-  rpc DeleteCategory (DeleteCategoryRequest) returns (DeleteCategoryResponse) {
+  rpc DeleteCategory (DeleteCategoryRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       delete: "/v1/store/{store_uuid}/category/{category_uuid}"
     };
@@ -117,6 +115,9 @@ service ProductService {
   rpc GetProduct (GetProductRequest) returns (ProductResponse) {
     option (google.api.http) = {
       get: "/v1/store/{store_uuid}/category/{category_uuid}/product/{product_uuid}"
+      additional_bindings :{
+        get: "/v1/store/{store_uuid}/product/{product_uuid}"
+      }
     };
   };
 
@@ -127,7 +128,7 @@ service ProductService {
     };
   };
 
-  rpc DeleteProduct (DeleteProductRequest) returns (DeleteProductResponse) {
+  rpc DeleteProduct (DeleteProductRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       delete: "/v1/store/{store_uuid}/category/{category_uuid}/product/{product_uuid}"
     };
@@ -135,15 +136,17 @@ service ProductService {
 
   rpc ListProducts (ListProductsRequest) returns (ListProductsResponse) {
     option (google.api.http) = {
-      get: "/v1/store/{store_uuid}/category/{category_uuid}/product"
+      get: "/v1/store/{store_uuid}/category/{category_uuid}/product/list"
+      additional_bindings :{
+        get: "/v1/store/{store_uuid}/product/list"
+      }
     };
   };
 
-  // Add-ons
   rpc CreateAddOn (CreateAddOnRequest) returns (AddOnResponse) {
     option (google.api.http) = {
-      post: "/v1/store/{store_uuid}/product/{product_uuid}/add_ons"
-      body: "add_on"
+      post: "/v1/store/{store_uuid}/product/{product_uuid}/add_on"
+      body: "*"
     };
   };
 
@@ -156,11 +159,11 @@ service ProductService {
   rpc UpdateAddOn (UpdateAddOnRequest) returns (AddOnResponse) {
     option (google.api.http) = {
       put: "/v1/store/{store_uuid}/product/{product_uuid}/add_on/{add_on_uuid}"
-      body: "add_on"
+      body: "*"
     };
   };
 
-  rpc DeleteAddOn (DeleteAddOnRequest) returns (DeleteAddOnResponse) {
+  rpc DeleteAddOn (DeleteAddOnRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       delete: "/v1/store/{store_uuid}/product/{product_uuid}/add_on/{add_on_uuid}"
     };
@@ -171,24 +174,62 @@ service ProductService {
       get: "/v1/store/{store_uuid}/product/{product_uuid}/add_on/list"
     };
   };
+
+  rpc CreateDietPref (CreateDietaryPreference) returns (DietPrefResponse){
+    option (google.api.http) = {
+      post: "/v1/store/{store_uuid}/dietpref"
+      body: "*"
+    };
+  };
+
+  rpc GetDietPref (GetDietaryPreference) returns (DietPrefResponse){
+    option (google.api.http) = {
+      get: "/v1/store/{store_uuid}/dietpref"
+    };
+  };
+
+  rpc UpdateDietPref (UpdateDietaryPreference) returns (DietPrefResponse){
+    option (google.api.http) = {
+      patch: "/v1/store/{store_uuid}/dietpref"
+    };
+  };
+
+  rpc DeleteDietPref (DeleteDietaryPreference) returns (google.protobuf.Empty){
+    option (google.api.http) = {
+      delete: "/v1/store/{store_uuid}/dietpref"
+    };
+  };
+  rpc ListDietPref (ListDietaryPreference) returns (ListDietPrefResponse){
+    option (google.api.http) = {
+      get: "/v1/store/{store_uuid}/dietpref/list"
+    };
+  };
+
 }
 
 message CreateCategoryRequest{
 
     string store_uuid =1;
-    category category = 2;
+    string name =2;
+    string description = 3;
+    int32 display_order =4;
+    bool is_available = 5;
+    bool is_active = 6;
 
 }
 message CategoryResponse{
     category category = 1;
-    bool success = 2;
-    error error =3;
 }
 message UpdateCategoryRequest{
     string store_uuid =1;
     string category_uuid = 2;
-    optional category category = 3;
+    optional string name =3;
+    optional string description = 4;
+    optional int32 display_order =5;
+    optional bool is_available = 6;
+    optional bool is_active = 7;
 }
+
 message GetCategoryRequest{
 
     string category_uuid = 1;
@@ -204,29 +245,28 @@ message ListCategoryResponse{
     repeated category categories = 1;
     int32 prev_page = 2;
     int32 next_page = 3;
-    bool success = 4;
-    optional error error = 5;
 }
 message DeleteCategoryRequest{
     string category_uuid = 1;
     string store_uuid =2;
 }
-message DeleteCategoryResponse{
-    bool success = 1;
-    error error =2;
-}
+
 message CreateProductRequest{
 
-    product product = 1;
-    bytes Image =2;
-    string store_uuid =3;
-    string category_uuid =4;
-    
+  string store_uuid = 1;
+  string name = 2;
+  string description = 3;
+  Productstatus status = 4;
+  bool is_available = 5;
+  float display_price =6;
+  float price = 7;
+  float GST_percentage = 8;
+  string category_uuid = 9;
+  string diet_pref_uuid =10;
+  bytes image_bytes =11;
 }
 message ProductResponse{
-    optional product product = 1;
-    bool success = 2;
-    optional error error = 3;
+    product product = 1;
 }
 message GetProductRequest{
     string product_uuid =1;
@@ -235,11 +275,20 @@ message GetProductRequest{
 
 }
 message UpdateProductRequest{
-    string product_uuid =1;
-    string store_uuid=2;
-    optional product product =3;
-    optional bytes image = 4;
-    string category_uuid = 5;
+
+    string product_uuid = 1;
+    string store_uuid = 2;
+    string category_uuid = 3;
+    optional string name = 4;
+    optional string description = 5;
+    optional Productstatus status = 6;
+    optional bool is_available = 7;
+    optional float display_price =8;
+    optional float price = 9;
+    optional float GST_percentage = 10;
+    optional string new_category_uuid = 11;
+    optional string diet_pref_uuid =12;
+    optional bytes image_bytes =13;
 
 }
 message DeleteProductRequest{
@@ -248,10 +297,7 @@ message DeleteProductRequest{
     string category_uuid = 3;
 
 }
-message DeleteProductResponse{
-    bool success = 1;
-    error error = 2;
-}
+
 message ListProductsRequest{
 
     string store_uuid = 1;
@@ -262,8 +308,6 @@ message ListProductsRequest{
 }
 message ListProductsResponse{
     repeated product products = 1;
-    bool success = 2;
-    error error =3;
     int32 prev_page = 4;
     int32 next_page = 5;
 
@@ -271,12 +315,15 @@ message ListProductsResponse{
 message CreateAddOnRequest{
     string store_uuid = 1;
     string product_uuid =2;
-    add_on add_on = 3;
+    string name =3;
+    bool is_available =4;
+    int32 max_selectable = 5;
+    float GST_percentage =6;
+    float price = 7;
+    
 }
 message AddOnResponse{
-    optional add_on add_on = 1;
-    bool success = 2;
-    error error =3;
+    add_on add_on = 1;
 }
 
 message GetAddOnRequest{
@@ -289,7 +336,11 @@ message UpdateAddOnRequest{
   string store_uuid =1;
   string product_uuid =2;
   string add_on_uuid =3;
-  optional add_on add_on =4;
+  optional string name =4;
+  optional bool is_available =5;
+  optional int32 max_selectable = 6;
+  optional float GST_percentage =7;
+  optional float price = 8;
   
 }
 
@@ -297,13 +348,7 @@ message DeleteAddOnRequest{
     string add_on_uuid =1;
     string store_uuid =2;
     string product_uuid =3;
-
 }
-message DeleteAddOnResponse{
-    bool success = 1;
-    error error = 2;
-}
-
 
 message ListAddOnRequest{
     string product_uuid = 1;
@@ -314,8 +359,46 @@ message ListAddOnRequest{
 }
 message ListAddOnResponse{
     repeated add_on add_ons = 1;
-    bool success = 2;
-    error error = 3;
     int32 next_page =4;
     int32 prev_page = 5;
+}
+
+message CreateDietaryPreference{
+  string store_uuid = 1;
+  string name = 2;
+  string description = 3;
+  optional bytes icon_image_bytes = 4;
+
+}
+message GetDietaryPreference{
+  string store_uuid = 1;
+  string diet_pref_uuid = 2;
+} 
+message DietPrefResponse{
+  dietary_preference dietary_preference = 1;
+}
+
+message UpdateDietaryPreference{
+  string store_uuid = 1;
+  string diet_pref_uuid = 2;
+  string name = 3;
+  string description = 4;
+  bytes icon_image= 5;
+}
+message DeleteDietaryPreference {
+  string store_uuid = 1;
+  string diet_pref_uuid = 2;
+}
+
+message ListDietaryPreference {
+  string store_uuid = 1;
+  int32 page = 2;
+  int32 limit = 3;
+
+}
+
+message ListDietPrefResponse{
+  repeated dietary_preference dietary_preferences = 1;
+  int32 next_page =2;
+  int32 prev_page = 3;
 }

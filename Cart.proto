@@ -26,7 +26,7 @@ service CartService {
         };
         rpc UpdateCart(UpdateCartRequest) returns  (CartResponse){
             option (google.api.http) ={
-                put: "/v1/store/{store_uuid}/user/{user_phone_no}/cart/{cart_uuid}"
+                patch: "/v1/store/{store_uuid}/user/{user_phone_no}/cart/{cart_uuid}"
                 body: "*"
                 additional_bindings: {
                     put: "/v1/store/{store_uuid}/user/{user_phone_no}/cart"
@@ -79,12 +79,12 @@ service CartService {
             };
         };
 
-        rpc UpdateAddOn(UpdateAddOnRequest) returns (CartResponse){
-            option (google.api.http) = {
-                patch : "/v1/store/{store_uuid}/user/{user_phone_no}/cart/{cart_uuid}/cartitem/{cart_item_uuid}/addon/{add_on_uuid}"
-                body : "*"
-            };
-        };
+        // rpc UpdateAddOn(UpdateAddOnRequest) returns (CartResponse){
+        //     option (google.api.http) = {
+        //         patch : "/v1/store/{store_uuid}/user/{user_phone_no}/cart/{cart_uuid}/cartitem/{cart_item_uuid}/addon/{add_on_uuid}"
+        //         body : "*"
+        //     };
+        // };
 
         rpc RemoveAddOn(RemoveAddOnRequest) returns (CartResponse){
             option (google.api.http) = {
@@ -112,7 +112,7 @@ service CartService {
         
         rpc AddCoupon (AddCouponRequest) returns  (CartResponse){
             option (google.api.http) = {
-                put: "/v1/store/{store_uuid}/user/{user_phone_no}/cart/{cart_uuid}/coupon/{coupon_code}"  // Changed from query param to path param
+                patch: "/v1/store/{store_uuid}/user/{user_phone_no}/cart/{cart_uuid}/coupon/{coupon_code}"  // Changed from query param to path param
             };
         };
 
@@ -242,14 +242,15 @@ message AddCartItemRequest{
     string cart_uuid = 1;
     string store_uuid = 2;
     string user_phone_no = 3;
-    CartItem cart_item =4;
+    string product_uuid = 4;
 }
 message RemoveCartItemRequest{
-    string cart_item_uuid = 1;
-    string cart_uuid = 2;
-    string product_uuid = 3;
-    string store_uuid = 4;
-    string user_phone_no = 5;
+    string cart_uuid = 1;
+    string user_phone_no = 2;    
+    string store_uuid = 3;
+    string cart_item_uuid = 4;
+    string product_uuid = 5;
+
 }
 message AddQuantityRequest{
     string cart_uuid = 1;
@@ -269,18 +270,18 @@ message CreateAddOnRequest{
     string cart_uuid = 1;
     string cart_item_uuid =2;
     string product_uuid = 3;
-    AddOn add_on = 4;
+    string add_on_uuid = 4;
     string store_uuid = 5;
     string user_phone_no = 6;
 }
-message UpdateAddOnRequest{
-    string cart_uuid = 1;
-    string cart_item_uuid = 2;
-    string add_on_uuid = 3;
-    AddOn add_on = 4;
-    string store_uuid = 5;
-    string user_phone_no = 6;
-}
+// message UpdateAddOnRequest{
+//     string cart_uuid = 1;
+//     string cart_item_uuid = 2;
+//     string add_on_uuid = 3;
+//     AddOn add_on = 4;
+//     string store_uuid = 5;
+//     string user_phone_no = 6;
+// }
 message RemoveAddOnRequest{
     string cart_uuid = 1;
     string cart_item_uuid = 2;
