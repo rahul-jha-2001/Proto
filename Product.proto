@@ -40,7 +40,7 @@ message add_on{
      string product_uuid = 7;
      google.protobuf.Timestamp created_at = 8;
      google.protobuf.Timestamp updated_at = 9;
-
+     bool is_free = 10;
 }
 
 message product
@@ -60,6 +60,7 @@ message product
     repeated add_on add_ons = 13;
     google.protobuf.Timestamp created_at = 14;
     google.protobuf.Timestamp updated_at = 15;
+    float packaging_cost = 16;
 }
 
 message dietary_preference
@@ -264,6 +265,7 @@ message CreateProductRequest{
   string category_uuid = 9;
   string diet_pref_uuid =10;
   bytes image_bytes =11;
+  float packaging_cost = 12;
 }
 message ProductResponse{
     product product = 1;
@@ -272,6 +274,8 @@ message GetProductRequest{
     string product_uuid =1;
     string store_uuid = 2;
     string category_uuid = 3;
+    bool is_active = 4;
+    bool is_available = 5;
 
 }
 message UpdateProductRequest{
@@ -289,6 +293,7 @@ message UpdateProductRequest{
     optional string new_category_uuid = 11;
     optional string diet_pref_uuid =12;
     optional bytes image_bytes =13;
+    optional float packaging_cost = 14;
 
 }
 message DeleteProductRequest{
@@ -320,6 +325,7 @@ message CreateAddOnRequest{
     int32 max_selectable = 5;
     float GST_percentage =6;
     float price = 7;
+    bool is_free = 8;
     
 }
 message AddOnResponse{
@@ -341,6 +347,7 @@ message UpdateAddOnRequest{
   optional int32 max_selectable = 6;
   optional float GST_percentage =7;
   optional float price = 8;
+  optional bool is_free = 9;
   
 }
 

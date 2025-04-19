@@ -229,7 +229,12 @@ message UpdateCartRequest{
     string store_uuid = 1;
     string user_phone_no = 2;
     string cart_uuid = 3;
-    Cart cart = 4;
+    optional ORDERTYPE order_type = 4;
+    optional string table_no = 5;
+    optional string vehicle_no = 6;
+    optional string vehicle_description = 7;
+    optional string coupon_code = 8;
+    optional string special_instructions = 9;
 }
 
 message DeleteCartRequest{
@@ -238,7 +243,7 @@ message DeleteCartRequest{
     string cart_uuid = 3;
 }
 
-message AddCartItemRequest{
+message  AddCartItemRequest{
     string cart_uuid = 1;
     string store_uuid = 2;
     string user_phone_no = 3;
@@ -269,10 +274,9 @@ message RemoveQuantityRequest{
 message CreateAddOnRequest{
     string cart_uuid = 1;
     string cart_item_uuid =2;
-    string product_uuid = 3;
-    string add_on_uuid = 4;
-    string store_uuid = 5;
-    string user_phone_no = 6;
+    string add_on_uuid = 3;
+    string store_uuid = 4;
+    string user_phone_no = 5;
 }
 // message UpdateAddOnRequest{
 //     string cart_uuid = 1;
@@ -372,9 +376,9 @@ service CouponService{
 }
 
 enum DISCOUNTTYPE{
-    UNSPCIFIED_DISCOUNT = 0;
-    PERCENTAGE_DISCOUNT = 1;
-    FIXED_DISCOUNT = 2;
+    DISCOUNT_TYPE_UNSPCIFIED = 0;
+    DISCOUNT_TYPE_PERCENTAGE = 1;
+    DISCOUNT_TYPE_FIXED = 2;
 }
 
 message Coupon{
@@ -416,11 +420,27 @@ message CreateCouponRequest{
 message GetCouponRequest{
     string store_uuid = 1;
     string coupon_uuid = 2;
+    string coupon_code = 3;
 }
 message UpdateCouponRequest {
     string store_uuid = 1;
     string coupon_uuid = 2;
-    Coupon coupon = 3;
+    string coupon_code = 3;
+    DISCOUNTTYPE discount_type = 4;
+    
+    google.protobuf.Timestamp valid_from = 5;
+    google.protobuf.Timestamp valid_to = 6;
+
+    int32 usage_limit_per_user = 7;
+    int32 total_usage_limit = 8;
+
+    float discount = 9;
+    float min_spend = 10;
+    bool is_for_new_users = 11;
+    string description = 12;
+    float max_cart_value = 13;
+    bool is_active = 14;
+    float max_discount = 15;
 }
 message DeleteCouponRequest{
     string store_uuid = 1;
