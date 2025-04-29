@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package UserAuth_v1;
+import "annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+option go_package = "/user_auth;user_auth";
+
+
+
+service AuthService {
+    // Store owner authentication
+    rpc CreateUser (CreateUserRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/auth/storeuser/create_user"
+            body: "*"
+        };
+    }
+
+    rpc VerifyToken (VerifyTokenRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/auth/storeuser/verify_token"
+            body: "*"
+        };
+    }
+}
+
+message Token{
+    string token = 1;
+}
+
+message VerifyTokenRequest{
+    Token token = 1;
+    string firebase_uid = 2;
+}
+
+message CreateUserRequest{
+    string firebase_uid = 1;
+    Token token = 2;
+
+}
