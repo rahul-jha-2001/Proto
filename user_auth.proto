@@ -4,7 +4,35 @@ package UserAuth_v1;
 import "annotations.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
+// import "google/protobuf/timestamp.proto";
 option go_package = "/user_auth;user_auth";
+
+message User {
+    string user_uuid = 1;
+    string firebase_uid =2;
+    string email = 3;
+    string email_verified = 4;
+    repeated store stores = 5;
+}
+
+message store{
+    string store_uuid = 1;
+    string Store_name = 2;
+    string gst_number = 3;
+    address address = 4;
+
+}
+
+message address {
+    string address_uuid = 1; 
+    string address_line_1 = 2;
+    string address_line_2 = 3;
+    string landmark  = 4;
+    string city = 5;         
+    string state = 6;        
+    string country = 7;      
+    string pincode =  8;      
+}
 
 
 
@@ -23,19 +51,84 @@ service AuthService {
             body: "*"
         };
     }
+    rpc CreateStore (CreateStoreRequest) returns (StoreResponse){
+        option (google.api.http) = {
+            post: "/v1/storeuser/{user_uuid}/store"
+            body: "*"
+        };
+    }
+    rpc UpdateStore (UpdateStoreRequest) returns (StoreResponse){
+        option (google.api.http) = {
+            patch: "/v1/storeuser/{user_uuid}/store"
+            body: "*"
+        };
+    }
+    rpc CreateAddress (AddAddressRequest) returns (StoreResponse){
+        option (google.api.http) = {
+            post: "/v1/store/{store_uuid}/address"
+            body: "*"
+        };
+    }
+    rpc UpdateAddress (UpdateAddressRequest) returns (StoreResponse){
+        option (google.api.http) = {
+            patch: "/v1/store/{store_uuid}/address"
+            body: "*"
+        };
+    }
 }
 
-message Token{
-    string token = 1;
-}
+
 
 message VerifyTokenRequest{
-    Token token = 1;
+    string token = 1;
     string firebase_uid = 2;
 }
 
 message CreateUserRequest{
     string firebase_uid = 1;
-    Token token = 2;
+    string token = 2;
 
+}
+
+message CreateStoreRequest{
+    string user_uuid = 1;
+    string store_name = 2;
+    string gst_number =3;
+}
+
+message StoreResponse{  
+    string user_uuid = 1;
+    store store = 2;
+}
+
+message UpdateStoreRequest{
+    string user_uuid = 1;
+    string store_uuid = 2;
+    optional string store_name = 3;
+    optional string gst_number =5;
+}
+
+message AddAddressRequest{
+    string user_uuid = 1;
+    string store_uuid = 2;
+    string address_1 = 3;
+    string address_2 = 4;
+    string landmark = 5;
+    string  city = 6;
+    string state = 7;
+    string pincode = 8;
+    string country = 9;
+}
+
+message UpdateAddressRequest{
+    string user_uuid = 1;
+    string store_uuid = 2;
+    string address_uuid = 3;
+    optional string address_1 = 4;
+    optional string address_2 = 5;
+    optional string landmark = 6;
+    optional string  city = 7;
+    optional string state = 8;
+    optional string pincode = 9;
+    optional string country = 10;
 }
