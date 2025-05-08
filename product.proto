@@ -1,0 +1,411 @@
+syntax = "proto3";
+
+package product_v1;
+
+import "google/protobuf/timestamp.proto";
+import "annotations.proto";
+import "google/protobuf/empty.proto";
+option go_package = "/product;product";
+
+
+
+
+enum Productstatus{
+    PRODUCT_STATE_DRAFT = 0;
+    PRODUCT_STATE_ACTIVE = 1;
+    PRODUCT_STATE_INACTIVE =2;
+    PRODUCT_STATE_OUT_OF_STOCK = 3;
+}
+
+message category 
+{
+    string category_uuid = 1;
+    string store_uuid =2;
+    string name =3;
+    string description = 4;
+    int32 display_order =5;
+    bool is_available = 6;
+    bool is_active = 7;
+    google.protobuf.Timestamp created_at =8;
+    google.protobuf.Timestamp updated_at = 9;
+}
+
+message add_on{
+     string add_on_uuid = 1;
+     string name =2;
+     bool is_available =3;
+     int32 max_selectable = 4;
+     float GST_percentage =5;
+     float price = 6;
+     string product_uuid = 7;
+     google.protobuf.Timestamp created_at = 8;
+     google.protobuf.Timestamp updated_at = 9;
+     bool is_free = 10;
+}
+
+message product
+{
+    string product_uuid = 1;
+    string store_uuid = 2;
+    string name = 3;
+    string description = 4;
+    Productstatus status =5;
+    bool is_available = 6;
+    float display_price =7;
+    float price = 8;
+    float GST_percentage = 9;
+    category category = 10;
+    repeated dietary_preference dietary_pref =11;
+    string image_URL = 12;
+    repeated add_on add_ons = 13;
+    google.protobuf.Timestamp created_at = 14;
+    google.protobuf.Timestamp updated_at = 15;
+    float packaging_cost = 16;
+}
+
+message dietary_preference
+{
+  string store_uuid = 1;
+  string diet_pref_uuid = 2;
+  string name = 3;
+  string description = 4;
+  string icon_url = 5;
+}
+
+service ProductService {
+  rpc CreateCategory (CreateCategoryRequest) returns (CategoryResponse) {
+    option (google.api.http) = {
+      post: "/v1/store/{store_uuid}/category"
+      body: "*"
+    };
+  };
+
+  rpc UpdateCategory (UpdateCategoryRequest) returns (CategoryResponse) {
+    option (google.api.http) = {
+      patch: "/v1/store/{store_uuid}/category/{category_uuid}"
+      body: "*"
+    };
+  };
+
+  rpc GetCategory (GetCategoryRequest) returns (CategoryResponse) {
+    option (google.api.http) = {
+      get: "/v1/store/{store_uuid}/category/{category_uuid}"
+    };
+  };
+
+  rpc ListCategory (ListCategoryRequest) returns (ListCategoryResponse) {
+    option (google.api.http) = {
+      get: "/v1/store/{store_uuid}/category/list"
+    };
+  };
+
+  rpc DeleteCategory (DeleteCategoryRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/v1/store/{store_uuid}/category/{category_uuid}"
+    };
+  };
+
+  // Products
+  rpc CreateProduct (CreateProductRequest) returns (ProductResponse) {
+    option (google.api.http) = {
+      post: "/v1/store/{store_uuid}/category/{category_uuid}/product"
+      body: "*"
+    };
+  };
+
+  rpc GetProduct (GetProductRequest) returns (ProductResponse) {
+    option (google.api.http) = {
+      get: "/v1/store/{store_uuid}/category/{category_uuid}/product/{product_uuid}"
+      additional_bindings :{
+        get: "/v1/store/{store_uuid}/product/{product_uuid}"
+      }
+    };
+  };
+
+  rpc UpdateProduct (UpdateProductRequest) returns (ProductResponse) {
+    option (google.api.http) = {
+      patch: "/v1/store/{store_uuid}/category/{category_uuid}/product/{product_uuid}"
+      body: "*"
+    };
+  };
+
+  rpc DeleteProduct (DeleteProductRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/v1/store/{store_uuid}/category/{category_uuid}/product/{product_uuid}"
+    };
+  };
+
+  rpc ListProducts (ListProductsRequest) returns (ListProductsResponse) {
+    option (google.api.http) = {
+      get: "/v1/store/{store_uuid}/category/{category_uuid}/product/list"
+      additional_bindings :{
+        get: "/v1/store/{store_uuid}/product/list"
+      }
+    };
+  };
+
+  rpc CreateAddOn (CreateAddOnRequest) returns (AddOnResponse) {
+    option (google.api.http) = {
+      post: "/v1/store/{store_uuid}/product/{product_uuid}/add_on"
+      body: "*"
+    };
+  };
+
+  rpc GetAddOn (GetAddOnRequest) returns (AddOnResponse) {
+    option (google.api.http) = {
+      get: "/v1/store/{store_uuid}/product/{product_uuid}/add_on/{add_on_uuid}"
+    };
+  };
+
+  rpc UpdateAddOn (UpdateAddOnRequest) returns (AddOnResponse) {
+    option (google.api.http) = {
+      put: "/v1/store/{store_uuid}/product/{product_uuid}/add_on/{add_on_uuid}"
+      body: "*"
+    };
+  };
+
+  rpc DeleteAddOn (DeleteAddOnRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/v1/store/{store_uuid}/product/{product_uuid}/add_on/{add_on_uuid}"
+    };
+  };
+
+  rpc ListAddOn (ListAddOnRequest) returns (ListAddOnResponse) {
+    option (google.api.http) = {
+      get: "/v1/store/{store_uuid}/product/{product_uuid}/add_on/list"
+    };
+  };
+
+  rpc CreateDietPref (CreateDietaryPreference) returns (DietPrefResponse){
+    option (google.api.http) = {
+      post: "/v1/store/{store_uuid}/dietpref"
+      body: "*"
+    };
+  };
+
+  rpc GetDietPref (GetDietaryPreference) returns (DietPrefResponse){
+    option (google.api.http) = {
+      get: "/v1/store/{store_uuid}/dietpref"
+    };
+  };
+
+  rpc UpdateDietPref (UpdateDietaryPreference) returns (DietPrefResponse){
+    option (google.api.http) = {
+      patch: "/v1/store/{store_uuid}/dietpref"
+    };
+  };
+
+  rpc DeleteDietPref (DeleteDietaryPreference) returns (google.protobuf.Empty){
+    option (google.api.http) = {
+      delete: "/v1/store/{store_uuid}/dietpref"
+    };
+  };
+  rpc ListDietPref (ListDietaryPreference) returns (ListDietPrefResponse){
+    option (google.api.http) = {
+      get: "/v1/store/{store_uuid}/dietpref/list"
+    };
+  };
+
+}
+
+message CreateCategoryRequest{
+
+    string store_uuid =1;
+    string name =2;
+    string description = 3;
+    int32 display_order =4;
+    bool is_available = 5;
+    bool is_active = 6;
+
+}
+message CategoryResponse{
+    category category = 1;
+}
+message UpdateCategoryRequest{
+    string store_uuid =1;
+    string category_uuid = 2;
+    optional string name =3;
+    optional string description = 4;
+    optional int32 display_order =5;
+    optional bool is_available = 6;
+    optional bool is_active = 7;
+}
+
+message GetCategoryRequest{
+
+    string category_uuid = 1;
+    string store_uuid =2;
+
+}
+message ListCategoryRequest{
+    string store_uuid = 1;
+    int32 page = 2;
+    int32 limit = 3;
+}
+message ListCategoryResponse{
+    repeated category categories = 1;
+    int32 prev_page = 2;
+    int32 next_page = 3;
+}
+message DeleteCategoryRequest{
+    string category_uuid = 1;
+    string store_uuid =2;
+}
+
+message CreateProductRequest{
+
+  string store_uuid = 1;
+  string name = 2;
+  string description = 3;
+  Productstatus status = 4;
+  bool is_available = 5;
+  float display_price =6;
+  float price = 7;
+  float GST_percentage = 8;
+  string category_uuid = 9;
+  string diet_pref_uuid =10;
+  bytes image_bytes =11;
+  float packaging_cost = 12;
+}
+message ProductResponse{
+    product product = 1;
+}
+message GetProductRequest{
+    string product_uuid =1;
+    string store_uuid = 2;
+    string category_uuid = 3;
+    bool is_active = 4;
+    bool is_available = 5;
+
+}
+message UpdateProductRequest{
+
+    string product_uuid = 1;
+    string store_uuid = 2;
+    string category_uuid = 3;
+    optional string name = 4;
+    optional string description = 5;
+    optional Productstatus status = 6;
+    optional bool is_available = 7;
+    optional float display_price =8;
+    optional float price = 9;
+    optional float GST_percentage = 10;
+    optional string new_category_uuid = 11;
+    optional string diet_pref_uuid =12;
+    optional bytes image_bytes =13;
+    optional float packaging_cost = 14;
+
+}
+message DeleteProductRequest{
+    string product_uuid = 1;
+    string store_uuid = 2;
+    string category_uuid = 3;
+
+}
+
+message ListProductsRequest{
+
+    string store_uuid = 1;
+    string  category_uuid = 2;
+    int32 page = 3;
+    int32 limit = 4;
+    
+}
+message ListProductsResponse{
+    repeated product products = 1;
+    int32 prev_page = 4;
+    int32 next_page = 5;
+
+}
+message CreateAddOnRequest{
+    string store_uuid = 1;
+    string product_uuid =2;
+    string name =3;
+    bool is_available =4;
+    int32 max_selectable = 5;
+    float GST_percentage =6;
+    float price = 7;
+    bool is_free = 8;
+    
+}
+message AddOnResponse{
+    add_on add_on = 1;
+}
+
+message GetAddOnRequest{
+  string store_uuid = 1;
+  string product_uuid =2;
+  string add_on_uuid = 3;
+}
+
+message UpdateAddOnRequest{
+  string store_uuid =1;
+  string product_uuid =2;
+  string add_on_uuid =3;
+  optional string name =4;
+  optional bool is_available =5;
+  optional int32 max_selectable = 6;
+  optional float GST_percentage =7;
+  optional float price = 8;
+  optional bool is_free = 9;
+  
+}
+
+message DeleteAddOnRequest{
+    string add_on_uuid =1;
+    string store_uuid =2;
+    string product_uuid =3;
+}
+
+message ListAddOnRequest{
+    string product_uuid = 1;
+    string store_uuid = 2;
+    int32 page = 3;
+    int32 limit = 4;
+
+}
+message ListAddOnResponse{
+    repeated add_on add_ons = 1;
+    int32 next_page =4;
+    int32 prev_page = 5;
+}
+
+message CreateDietaryPreference{
+  string store_uuid = 1;
+  string name = 2;
+  string description = 3;
+  optional bytes icon_image_bytes = 4;
+
+}
+message GetDietaryPreference{
+  string store_uuid = 1;
+  string diet_pref_uuid = 2;
+} 
+message DietPrefResponse{
+  dietary_preference dietary_preference = 1;
+}
+
+message UpdateDietaryPreference{
+  string store_uuid = 1;
+  string diet_pref_uuid = 2;
+  string name = 3;
+  string description = 4;
+  bytes icon_image= 5;
+}
+message DeleteDietaryPreference {
+  string store_uuid = 1;
+  string diet_pref_uuid = 2;
+}
+
+message ListDietaryPreference {
+  string store_uuid = 1;
+  int32 page = 2;
+  int32 limit = 3;
+
+}
+
+message ListDietPrefResponse{
+  repeated dietary_preference dietary_preferences = 1;
+  int32 next_page =2;
+  int32 prev_page = 3;
+}

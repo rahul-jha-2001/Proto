@@ -1,0 +1,113 @@
+syntax = "proto3";  // Add syntax declaration
+
+package template.v1;  // Add package name
+option go_package = "/Template;Template";
+
+// Template service definitions for managing message templates
+
+enum TemplateCategory {
+    MARKETING = 0;
+    UTILITY = 1;
+    AUTHENTICATION = 2;
+}
+
+enum TemplateStatus {
+    PENDING = 0;
+    APPROVED = 1;
+    REJECTED = 2;
+}
+
+enum TemplateParameterFormat{
+    POSITIONAL = 0;
+    NAMED = 1;
+}
+
+enum TemplateComponentType {
+    HEADER = 0;
+    BODY = 1;
+    FOOTER = 2;
+}
+
+enum TemplateParameterType {
+    TEXT = 0;
+    CURRENCY = 1;
+    MEDIA = 2;
+}
+
+enum TemplateButtonType {
+    QUICK_REPLY = 0;
+    URL = 1;
+}
+
+message Template {
+    string id = 1;
+    string name = 2;
+    TemplateCategory category = 3;
+    TemplateStatus status = 4;
+    string language = 5;
+    TemplateParameterFormat parameter_format = 6;
+    int32 message_send_ttl_seconds = 7;
+    string whatsapp_template_id = 8;
+    repeated TemplateComponent components = 9;
+    repeated TemplateButton buttons = 10;
+}
+
+message TemplateComponent {
+    string name = 1;
+    TemplateComponentType type = 2;
+    string text = 3;
+    string format = 4;
+    repeated TemplateParameter parameters = 5;
+}
+
+message TemplateParameter {
+    string name = 1;
+    TemplateParameterType type = 2;
+    string text_value = 3;
+    optional int32 index = 4;
+}
+
+message TemplateButton {
+    TemplateButtonType type = 1;
+    string text = 2;
+    optional string url = 3;
+    optional int32 index = 4;
+}
+
+service TemplateService {
+    rpc getTemplate(GetTemplateRequest) returns (GetTemplateResponse);
+    rpc listTemplates(ListTemplatesRequest) returns (ListTemplatesResponse);
+}
+
+message GetTemplateRequest {
+    optional string id = 1;
+    optional string name = 2;
+    optional string whatsapp_template_id = 3;
+}
+
+message GetTemplateResponse {
+    optional Template template = 1;
+    Error error = 2;
+    bool success = 3;
+}
+
+message ListTemplatesRequest {
+    optional TemplateCategory category = 1;
+    optional TemplateStatus status = 2;
+    string language = 3;
+    optional TemplateParameterFormat parameter_format = 4;
+    int32 page = 5;
+    int32 limit = 6;
+}
+
+message ListTemplatesResponse {
+    repeated Template templates = 1;
+    int32 next_page = 2;
+    int32 previous_page = 3;
+    Error error = 4;
+    bool success = 5;
+}
+message Error {
+    string error = 1;
+    string error_code = 2;
+}
