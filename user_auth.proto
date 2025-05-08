@@ -51,6 +51,7 @@ service AuthService {
             body: "*"
         };
     }
+    
     rpc CreateStore (CreateStoreRequest) returns (StoreResponse){
         option (google.api.http) = {
             post: "/v1/storeuser/{user_uuid}/store"
@@ -63,18 +64,46 @@ service AuthService {
             body: "*"
         };
     }
-    rpc CreateAddress (AddAddressRequest) returns (StoreResponse){
+    rpc GetStore (GetStoreRequest) returns (StoreResponse){
+        option (google.api.http) = {
+            get: "/v1/storeuser/{user_uuid}/store/{store_uuid}"
+        };
+    }
+    rpc GetAllStores (GetAllStoreRequest) returns (GetAllStoreResponse){
+        option (google.api.http) = {
+            get: "/v1/storeuser/{user_uuid}/stores"
+        };
+    }
+
+    rpc DeleteStore (DeleteStoreRequest) returns (google.protobuf.Empty){
+        option (google.api.http) = {
+            delete: "/v1/storeuser/{user_uuid}/store/{store_uuid}"
+        };
+    }
+
+    rpc CreateAddress (AddAddressRequest) returns (AddressResponse){
         option (google.api.http) = {
             post: "/v1/store/{store_uuid}/address"
             body: "*"
         };
     }
-    rpc UpdateAddress (UpdateAddressRequest) returns (StoreResponse){
+    rpc UpdateAddress (UpdateAddressRequest) returns (AddressResponse){
         option (google.api.http) = {
             patch: "/v1/store/{store_uuid}/address"
             body: "*"
         };
     }
+    rpc GetAddress (GetAddressRequest) returns (AddressResponse){
+        option (google.api.http) = {
+            get: "/v1/store/{store_uuid}/address/{address_uuid}"
+        };
+    }
+    rpc DeleteAddress (DeleteAddressRequest) returns (google.protobuf.Empty){
+        option (google.api.http) = {
+            delete: "/v1/store/{store_uuid}/address/{address_uuid}"
+        };
+    }
+
 }
 
 
@@ -93,7 +122,6 @@ message CreateUserRequest{
 message CreateStoreRequest{
     string user_uuid = 1;
     string store_name = 2;
-    string gst_number =3;
 }
 
 message StoreResponse{  
@@ -121,8 +149,7 @@ message AddAddressRequest{
 }
 
 message UpdateAddressRequest{
-    string user_uuid = 1;
-    string store_uuid = 2;
+    string store_uuid = 1;
     string address_uuid = 3;
     optional string address_1 = 4;
     optional string address_2 = 5;
@@ -131,4 +158,37 @@ message UpdateAddressRequest{
     optional string state = 8;
     optional string pincode = 9;
     optional string country = 10;
+}
+message GetStoreRequest{
+    string user_uuid = 1;
+    string store_uuid = 2;
+}
+message GetAllStoreRequest{
+    string user_uuid = 1;
+    string page = 2;
+    string limit = 3;
+}
+message GetAllStoreResponse{
+    repeated store stores = 1;
+    string prev_page = 2;
+    string next_page = 3;
+}
+message GetAddressRequest{
+    string user_uuid = 1;
+    string store_uuid = 2;
+    string address_uuid = 3;
+}
+message DeleteStoreRequest{
+    string user_uuid = 1;
+    string store_uuid = 2;
+}
+message DeleteAddressRequest{
+    string user_uuid = 1;
+    string store_uuid = 2;
+    string address_uuid = 3;
+}
+
+message AddressResponse{
+    string store_uuid = 1;
+    address address = 2;
 }
