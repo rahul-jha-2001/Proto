@@ -13,6 +13,8 @@ message User {
     string email = 3;
     string email_verified = 4;
     repeated store stores = 5;
+    google.protobuf.Timestamp created_at =8;
+    google.protobuf.Timestamp updated_at = 9;
 }
 
 message store{
@@ -20,7 +22,11 @@ message store{
     string Store_name = 2;
     string gst_number = 3;
     address address = 4;
+    bool is_active = 5;
+    bool is_open = 6;
 
+    google.protobuf.Timestamp created_at =8;
+    google.protobuf.Timestamp updated_at = 9;
 }
 
 message address {
@@ -31,7 +37,9 @@ message address {
     string city = 5;         
     string state = 6;        
     string country = 7;      
-    string pincode =  8;      
+    string pincode =  8;   
+    google.protobuf.Timestamp created_at =10;
+    google.protobuf.Timestamp updated_at = 11;   
 }
 
 
@@ -110,7 +118,7 @@ service AuthService {
 
 message VerifyTokenRequest{
     string token = 1;
-    string firebase_uid = 2;
+    string firebase_uid = 2; //Remove this later
 }
 
 message CreateUserRequest{
