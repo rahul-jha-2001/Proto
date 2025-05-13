@@ -111,6 +111,13 @@ service AuthService {
             delete: "/v1/store/{store_uuid}/address/{address_uuid}"
         };
     }
+    rpc CreateStoreWithAddress (CreateStoreWithAddressRequest) returns (StoreResponse) {
+        option (google.api.http) = {
+            post: "/v1/storeuser/{user_uuid}/store_with_address"
+            body: "*"
+        };
+    }
+    
 
 }
 
@@ -141,7 +148,9 @@ message UpdateStoreRequest{
     string user_uuid = 1;
     string store_uuid = 2;
     optional string store_name = 3;
-    optional string gst_number =5;
+    optional string gst_number =4;
+    optional bool is_active  = 5;
+    optional bool is_open = 6;
 }
 
 message AddAddressRequest{
@@ -199,4 +208,18 @@ message DeleteAddressRequest{
 message AddressResponse{
     string store_uuid = 1;
     address address = 2;
+}
+message CreateStoreWithAddressRequest {
+    string user_uuid = 1;
+    string store_name = 2;
+    string gst_number = 3;
+    
+    // nested address details
+    string address_1 = 4;
+    string address_2 = 5;
+    string landmark = 6;
+    string city = 7;
+    string state = 8;
+    string pincode = 9;
+    string country = 10;
 }
