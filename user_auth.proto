@@ -7,19 +7,18 @@ import "google/protobuf/timestamp.proto";
 // import "google/protobuf/timestamp.proto";
 option go_package = "/user_auth;user_auth";
 
-message User {
+message user {
     string user_uuid = 1;
     string firebase_uid =2;
     string email = 3;
-    string email_verified = 4;
-    repeated store stores = 5;
+    string phone = 4;
     google.protobuf.Timestamp created_at =8;
     google.protobuf.Timestamp updated_at = 9;
 }
 
 message store{
     string store_uuid = 1;
-    string Store_name = 2;
+    string store_name = 2;
     string gst_number = 3;
     address address = 4;
     bool is_active = 5;
@@ -45,82 +44,110 @@ message address {
 
 
 service AuthService {
-    // Store owner authentication
+    // User authentication
     rpc CreateUser (CreateUserRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
-            post: "/v1/auth/storeuser/create_user"
+            post: "/v1/auth/users"
             body: "*"
         };
     }
 
     rpc VerifyToken (VerifyTokenRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
-            post: "/v1/auth/storeuser/verify_token"
+            post: "/v1/auth/verify-token"
             body: "*"
-        };
-    }
-    
-    rpc CreateStore (CreateStoreRequest) returns (StoreResponse){
-        option (google.api.http) = {
-            post: "/v1/storeuser/{user_uuid}/store"
-            body: "*"
-        };
-    }
-    rpc UpdateStore (UpdateStoreRequest) returns (StoreResponse){
-        option (google.api.http) = {
-            patch: "/v1/storeuser/{user_uuid}/store"
-            body: "*"
-        };
-    }
-    rpc GetStore (GetStoreRequest) returns (StoreResponse){
-        option (google.api.http) = {
-            get: "/v1/storeuser/{user_uuid}/store/{store_uuid}"
-        };
-    }
-    rpc GetAllStores (GetAllStoreRequest) returns (GetAllStoreResponse){
-        option (google.api.http) = {
-            get: "/v1/storeuser/{user_uuid}/stores"
         };
     }
 
-    rpc DeleteStore (DeleteStoreRequest) returns (google.protobuf.Empty){
+    // Store operations
+    rpc CreateStore (CreateStoreRequest) returns (StoreResponse) {
         option (google.api.http) = {
-            delete: "/v1/storeuser/{user_uuid}/store/{store_uuid}"
+            post: "/v1/users/{user_uuid}/stores"
+            body: "*"
         };
     }
 
-    rpc CreateAddress (AddAddressRequest) returns (AddressResponse){
+    rpc UpdateStore (UpdateStoreRequest) returns (StoreResponse) {
         option (google.api.http) = {
-            post: "/v1/store/{store_uuid}/address"
+            patch: "/v1/stores/{store_uuid}"
             body: "*"
         };
     }
-    rpc UpdateAddress (UpdateAddressRequest) returns (AddressResponse){
+
+    rpc GetStore (GetStoreRequest) returns (StoreResponse) {
         option (google.api.http) = {
-            patch: "/v1/store/{store_uuid}/address"
+            get: "/v1/stores/{store_uuid}"
+        };
+    }
+
+    rpc GetAllStores (GetAllStoreRequest) returns (GetAllStoreResponse) {
+        option (google.api.http) = {
+            get: "/v1/users/{user_uuid}/stores"
+        };
+    }
+
+    rpc DeleteStore (DeleteStoreRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/stores/{store_uuid}"
+        };
+    }
+
+    // Address operations
+    rpc CreateAddress (AddAddressRequest) returns (AddressResponse) {
+        option (google.api.http) = {
+            post: "/v1/stores/{store_uuid}/addresses"
             body: "*"
         };
     }
-    rpc GetAddress (GetAddressRequest) returns (AddressResponse){
+
+    rpc UpdateAddress (UpdateAddressRequest) returns (AddressResponse) {
         option (google.api.http) = {
-            get: "/v1/store/{store_uuid}/address/{address_uuid}"
+            patch: "/v1/addresses/{address_uuid}"
+            body: "*"
         };
     }
-    rpc DeleteAddress (DeleteAddressRequest) returns (google.protobuf.Empty){
+
+    rpc GetAddress (GetAddressRequest) returns (AddressResponse) {
         option (google.api.http) = {
-            delete: "/v1/store/{store_uuid}/address/{address_uuid}"
+            get: "/v1/addresses/{address_uuid}"
         };
     }
+
+    rpc DeleteAddress (DeleteAddressRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/addresses/{address_uuid}"
+        };
+    }
+
+    // Optional: create store with address in one call
     rpc CreateStoreWithAddress (CreateStoreWithAddressRequest) returns (StoreResponse) {
         option (google.api.http) = {
-            post: "/v1/storeuser/{user_uuid}/store_with_address"
+            post: "/v1/users/{user_uuid}/stores-with-address"
             body: "*"
         };
     }
-    
+    // Get a single user by UUID
+    rpc GetUser (GetUserRequest) returns (user) {
+        option (google.api.http) = {
+            get: "/v1/users/{user_uuid}"
+        };
+    }
 
+    // Update user details
+    rpc UpdateUser (UpdateUserRequest) returns (user) {
+        option (google.api.http) = {
+            patch: "/v1/users/{user_uuid}"
+            body: "*"
+        };
+    }
+
+    // Delete a user
+    rpc DeleteUser (DeleteUserRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/users/{user_uuid}"
+        };
+    }
 }
-
 
 
 message VerifyTokenRequest{
@@ -133,10 +160,28 @@ message CreateUserRequest{
     string token = 2;
 
 }
+message GetUserRequest {
+    string user_uuid = 1;
+}
+
+message UpdateUserRequest {
+    string user_uuid = 1;
+    optional string email = 2;
+    optional string email_verified = 3;
+    // optionally allow updating password or preferences later
+}
+
+message DeleteUserRequest {
+    string user_uuid = 1;
+}
 
 message CreateStoreRequest{
     string user_uuid = 1;
     string store_name = 2;
+    string gst_number =3;
+    bool is_active  = 4;
+    bool is_open = 5;
+    string discription = 6;
 }
 
 message StoreResponse{  
@@ -187,8 +232,8 @@ message GetAllStoreRequest{
 }
 message GetAllStoreResponse{
     repeated store stores = 1;
-    string prev_page = 2;
-    string next_page = 3;
+    int32 prev_page = 2;
+    int32 next_page = 3;
 }
 message GetAddressRequest{
     string user_uuid = 1;
@@ -223,3 +268,4 @@ message CreateStoreWithAddressRequest {
     string pincode = 9;
     string country = 10;
 }
+
