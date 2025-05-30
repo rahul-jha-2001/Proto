@@ -192,12 +192,13 @@ service ProductService {
   rpc UpdateDietPref (UpdateDietaryPreference) returns (DietPrefResponse){
     option (google.api.http) = {
       patch: "/v1/store/{store_uuid}/dietpref"
+      body: "*" // Add this
     };
   };
-
+  
   rpc DeleteDietPref (DeleteDietaryPreference) returns (google.protobuf.Empty){
     option (google.api.http) = {
-      delete: "/v1/store/{store_uuid}/dietpref"
+      delete: "/v1/store/{store_uuid}/dietpref/{diet_pref_uuid}"
     };
   };
   rpc ListDietPref (ListDietaryPreference) returns (ListDietPrefResponse){
@@ -388,9 +389,9 @@ message DietPrefResponse{
 message UpdateDietaryPreference{
   string store_uuid = 1;
   string diet_pref_uuid = 2;
-  string name = 3;
-  string description = 4;
-  bytes icon_image= 5;
+  optional string name = 3;
+  optional string description = 4;
+  optional bytes icon_image_bytes= 5;
 }
 message DeleteDietaryPreference {
   string store_uuid = 1;
