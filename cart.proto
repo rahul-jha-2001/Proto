@@ -79,13 +79,6 @@ service CartService {
             };
         };
 
-        // rpc UpdateAddOn(UpdateAddOnRequest) returns (CartResponse){
-        //     option (google.api.http) = {
-        //         patch : "/v1/store/{store_uuid}/user/{user_phone_no}/cart/{cart_uuid}/cartitem/{cart_item_uuid}/addon/{add_on_uuid}"
-        //         body : "*"
-        //     };
-        // };
-
         rpc RemoveAddOn(RemoveAddOnRequest) returns (CartResponse){
             option (google.api.http) = {
                 delete : "/v1/store/{store_uuid}/user/{user_phone_no}/cart/{cart_uuid}/cartitem/{cart_item_uuid}/addon/{add_on_uuid}"

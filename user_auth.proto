@@ -7,6 +7,10 @@ import "google/protobuf/timestamp.proto";
 // import "google/protobuf/timestamp.proto";
 option go_package = "/user_auth;user_auth";
 
+
+// Add OTP sign-up request
+
+    
 message user {
     string user_uuid = 1;
     string firebase_uid =2;
@@ -23,6 +27,7 @@ message store{
     address address = 4;
     bool is_active = 5;
     bool is_open = 6;
+    string image_url = 10;
 
     google.protobuf.Timestamp created_at =8;
     google.protobuf.Timestamp updated_at = 9;
@@ -45,98 +50,138 @@ message address {
 
 service AuthService {
     // User authentication
-    rpc CreateUser (CreateUserRequest) returns (google.protobuf.Empty) {
+    rpc EmailSignUp (EmailSignUpRequest) returns (AccessTokenResponse) {
         option (google.api.http) = {
-            post: "/v1/auth/users"
+            post: "/v1/auth/store/signup"
+            body: "*"
+        };
+    }
+    rpc EmailSignIn (EmailSigninRequest) returns (AccessTokenResponse){
+        option (google.api.http) = {
+            post : "/v1/auth/store/signin"
+            body : "*"
+        };
+    }
+    rpc OtpSignup(OtpSignupRequest) returns (AccessTokenResponse) {
+          option (google.api.http) = {
+            post: "/v1/auth/customer/otp-signup"
             body: "*"
         };
     }
 
-    rpc VerifyToken (VerifyTokenRequest) returns (google.protobuf.Empty) {
+// Add this new message type for token-based refresh calls
+
+    
+    // Then update your methods to use it
+    rpc RefreshCustomerAccessToken (TokenRefreshRequest) returns (AccessTokenResponse) {
         option (google.api.http) = {
-            post: "/v1/auth/verify-token"
-            body: "*"
+        post: "/v1/auth/customer/token"
+        body: "*"
         };
     }
+    
+    rpc RefreshStoreAccessToken (TokenRefreshRequest) returns (AccessTokenResponse) {
+        option (google.api.http) = {
+        post: "/v1/auth/store/token"
+        body: "*"
+        };
+    }
+    
+    // Refresh short-lived JWT using existing session cookie
+    rpc RefreshCustomerJwt (TokenRefreshRequest) returns (AccessTokenResponse) {
+        option (google.api.http) = {
+        post: "/v1/auth/customer/jwt"
+        body: "*"
+        };
+    }
+    
+    rpc RefreshStoreJwt (TokenRefreshRequest) returns (AccessTokenResponse) {
+        option (google.api.http) = {
+        post: "/v1/auth/store/jwt"
+        body: "*"
+        };
+    }
+   
+
 
     // Store operations
     rpc CreateStore (CreateStoreRequest) returns (StoreResponse) {
         option (google.api.http) = {
-            post: "/v1/users/{user_uuid}/stores"
+            post: "/v1/user/{user_uuid}/store"
             body: "*"
         };
     }
 
     rpc UpdateStore (UpdateStoreRequest) returns (StoreResponse) {
         option (google.api.http) = {
-            patch: "/v1/stores/{store_uuid}"
+            patch: "/v1/store/{store_uuid}"
             body: "*"
         };
     }
 
     rpc GetStore (GetStoreRequest) returns (StoreResponse) {
         option (google.api.http) = {
-            get: "/v1/stores/{store_uuid}"
+            get: "/v1/store/{store_uuid}"
         };
     }
 
     rpc GetAllStores (GetAllStoreRequest) returns (GetAllStoreResponse) {
         option (google.api.http) = {
-            get: "/v1/users/{user_uuid}/stores"
+            get: "/v1/user/{user_uuid}/stores"
         };
     }
 
     rpc DeleteStore (DeleteStoreRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
-            delete: "/v1/stores/{store_uuid}"
+            delete: "/v1/store/{store_uuid}"
         };
     }
 
     // Address operations
     rpc CreateAddress (AddAddressRequest) returns (AddressResponse) {
         option (google.api.http) = {
-            post: "/v1/stores/{store_uuid}/addresses"
+            post: "/v1/store/{store_uuid}/addresses"
             body: "*"
         };
     }
 
     rpc UpdateAddress (UpdateAddressRequest) returns (AddressResponse) {
         option (google.api.http) = {
-            patch: "/v1/addresses/{address_uuid}"
+            patch: "/v1/address/{address_uuid}"
             body: "*"
         };
     }
 
     rpc GetAddress (GetAddressRequest) returns (AddressResponse) {
         option (google.api.http) = {
-            get: "/v1/addresses/{address_uuid}"
+            get: "/v1/address/{address_uuid}"
         };
     }
 
     rpc DeleteAddress (DeleteAddressRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
-            delete: "/v1/addresses/{address_uuid}"
+            delete: "/v1/address/{address_uuid}"
         };
     }
 
     // Optional: create store with address in one call
     rpc CreateStoreWithAddress (CreateStoreWithAddressRequest) returns (StoreResponse) {
         option (google.api.http) = {
-            post: "/v1/users/{user_uuid}/stores-with-address"
+            post: "/v1/user/{user_uuid}/stores-with-address"
             body: "*"
         };
     }
     // Get a single user by UUID
     rpc GetUser (GetUserRequest) returns (user) {
         option (google.api.http) = {
-            get: "/v1/users/{user_uuid}"
+            get: "/v1/user/{user_uuid}"
         };
     }
 
     // Update user details
     rpc UpdateUser (UpdateUserRequest) returns (user) {
         option (google.api.http) = {
-            patch: "/v1/users/{user_uuid}"
+            patch: "/v1/user/{user_uuid}"
             body: "*"
         };
     }
@@ -144,22 +189,38 @@ service AuthService {
     // Delete a user
     rpc DeleteUser (DeleteUserRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
-            delete: "/v1/users/{user_uuid}"
+            delete: "/v1/user/{user_uuid}"
         };
     }
 }
 
 
-message VerifyTokenRequest{
-    string token = 1;
-    string firebase_uid = 2; //Remove this later
+message OtpSignupRequest {
+    string token = 1; // ID token from Firebase OTP signin
+    string name = 2;
+    string phone_number = 3;
 }
 
-message CreateUserRequest{
+message EmailSignUpRequest{
     string firebase_uid = 1;
     string token = 2;
 
 }
+
+message EmailSigninRequest{
+    string firebase_uid = 1;
+    string token = 2;
+}
+
+message AccessTokenResponse {
+    string token = 1;           // short-lived JWT
+    string session_token = 2;   // long-lived Firebase session cookie (set by frontend)
+}
+
+message TokenRefreshRequest {
+    string session_token = 1; // Firebase session cookie
+}
+  
 message GetUserRequest {
     string user_uuid = 1;
 }
@@ -181,7 +242,9 @@ message CreateStoreRequest{
     string gst_number =3;
     bool is_active  = 4;
     bool is_open = 5;
-    string discription = 6;
+    string description = 6;
+    bytes image_bytes =7;
+
 }
 
 message StoreResponse{  
@@ -196,13 +259,15 @@ message UpdateStoreRequest{
     optional string gst_number =4;
     optional bool is_active  = 5;
     optional bool is_open = 6;
+    optional bytes image_bytes =7;
+
 }
 
 message AddAddressRequest{
     string user_uuid = 1;
     string store_uuid = 2;
-    string address_1 = 3;
-    string address_2 = 4;
+    string address_line_1 = 3;
+    string address_line_2 = 4;
     string landmark = 5;
     string  city = 6;
     string state = 7;
@@ -213,8 +278,8 @@ message AddAddressRequest{
 message UpdateAddressRequest{
     string store_uuid = 1;
     string address_uuid = 3;
-    optional string address_1 = 4;
-    optional string address_2 = 5;
+    optional string address_line_1 = 4;
+    optional string address_line_2 = 5;
     optional string landmark = 6;
     optional string  city = 7;
     optional string state = 8;
@@ -260,8 +325,8 @@ message CreateStoreWithAddressRequest {
     string gst_number = 3;
     
     // nested address details
-    string address_1 = 4;
-    string address_2 = 5;
+    string address_line_1 = 4;
+    string address_line_2 = 5;
     string landmark = 6;
     string city = 7;
     string state = 8;
