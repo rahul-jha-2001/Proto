@@ -9,6 +9,65 @@ import "google/protobuf/timestamp.proto";
 
 service CartService {
     //Core Cart Service
+
+        rpc CreateTable(CreateTableRequest) returns (Table) {
+            option (google.api.http) = {
+                post: "/v1/store/{store_uuid}/tables"
+                body: "*"
+            };
+        }
+        rpc GetTable(GetTableRequest) returns (Table) {
+            option (google.api.http) = {
+                get: "/v1/store/{store_uuid}/tables/{table_uuid}"
+            };
+        }
+        rpc ListTables(ListTablesRequest) returns (ListTablesResponse) {
+            option (google.api.http) = {
+                get: "/v1/store/{store_uuid}/tables"
+            };
+        }
+        rpc UpdateTable(UpdateTableRequest) returns (Table) {
+            option (google.api.http) = {
+                patch: "/v1/store/{store_uuid}/tables/{table_uuid}"
+                body: "*"
+            };
+        }
+        rpc DeleteTable(DeleteTableRequest) returns (google.protobuf.Empty) {
+            option (google.api.http) = {
+                delete: "/v1/store/{store_uuid}/tables/{table_uuid}"
+            };
+        }
+        rpc CreateServiceSession(CreateServiceSessionRequest) returns (ServiceSession) {
+            option (google.api.http) = {
+                post: "/v1/store/{store_uuid}/tables/{table_uuid}/sessions"
+                body: "*"
+            };
+        }
+        rpc GetServiceSession(GetServiceSessionRequest) returns (ServiceSession) {
+            option (google.api.http) = {
+                get: "/v1/store/{store_uuid}/sessions/{service_session_uuid}"
+            };
+        }
+
+        rpc ListServiceSessions(ListServiceSessionsRequest) returns (ListServiceSessionsResponse) {
+            option (google.api.http) = {
+                get: "/v1/store/{store_uuid}/sessions"
+            };
+        }
+
+        rpc GetActiveSession(GetActiveSessionByTableRequest) returns (GetActiveSessionByTableResponse){
+            option (google.api.http) = {
+                get: "/v1/store/{store_uuid}/table/{table_uuid}/session"
+            };
+        }
+
+
+        rpc ValidateSession (ValidateSessionRequest) returns (ValidateSessionResponse){
+            option (google.api.http) ={
+                get: "/v1/store/{store_uuid}/sessions/{service_session_uuid}/validate"
+            };
+        }
+
         rpc CreateCart(CreateCartRequest) returns (CartResponse){
             option (google.api.http) = {
                 post: "/v1/store/{store_uuid}/user/{user_phone_no}/cart"
@@ -122,6 +181,20 @@ service CartService {
         }
         // Add generate Order once the order service is fixed
 }
+enum PAYMENTTYPE{
+    PAYMENT_TYPE_UNSPECIFIED = 0;
+    PAYMENT_TYPE_POSTPAID = 1;
+    PAYMENT_TYPE_PREPAID = 2;
+}
+
+enum SERVICESESSIONSTATUS{
+    SERVICE_SESSION_UNSPECIFIED = 0;
+    SERVICE_SESSION_PENDING = 1;
+    SERVICE_SESSION_ONGOING = 2;
+    SERVICE_SESSION_ENDED = 3;
+    SERVICE_SESSION_CANCELLED = 4;
+}
+
 
 enum ORDERTYPE {
     ORDER_TYPE_UNSPECIFIED = 0;
@@ -136,6 +209,25 @@ enum CARTSTATE {
     CART_STATE_LOCKED = 2;
     CART_STATE_ABANDONED = 3;
 }
+
+message Table{
+    string table_uuid = 1;
+    string store_uuid = 2;
+    string table_number = 3;
+    PAYMENTTYPE payment_type = 4;
+    int32 no_of_sitting = 5;
+    bool is_active = 6;
+    string area_name = 7;
+}
+
+message ServiceSession {
+    string service_session_uuid = 1;
+    string table_uuid = 2;
+    google.protobuf.Timestamp started_at = 3;
+    google.protobuf.Timestamp ended_at = 4;
+    SERVICESESSIONSTATUS service_status = 5;
+}
+
 message Cart{
 
     string store_uuid = 1;
@@ -158,6 +250,9 @@ message Cart{
     float final_amount = 16;
 
     CARTSTATE cart_state = 17;
+
+    string table_uuid = 20;
+    string service_session_uuid = 21;
 
     google.protobuf.Timestamp created_at = 18;
     google.protobuf.Timestamp updated_at = 19;
@@ -195,6 +290,98 @@ message AddOn{
     float unit_price = 5;
     bool is_free = 6;
     float subtotal_amount = 7;
+}
+
+
+message CreateTableRequest {
+    string store_uuid   = 1;
+    string table_number = 2;
+    string area_name    = 3;
+    PAYMENTTYPE payment_type = 4;
+    int32  no_of_sitting     = 5;
+    bool is_active = 6;
+}
+
+message GetTableRequest {
+    string store_uuid = 1;
+    string table_uuid = 2;
+}
+
+message ListTablesRequest {
+    string store_uuid = 1;
+}
+
+message ListTablesResponse {
+    repeated Table tables = 1;
+}
+
+message UpdateTableRequest {
+    string store_uuid   = 1;
+    string table_uuid   = 2;
+    optional string area_name    = 3;
+    optional PAYMENTTYPE payment_type = 4;
+    optional int32  no_of_sitting     = 5;
+    optional bool   is_active         = 6;
+}
+
+message DeleteTableRequest {
+    string store_uuid = 1;
+    string table_uuid = 2;
+}
+
+// -----------------------
+// Request & Response Messages for ServiceSessionService
+// -----------------------
+message CreateServiceSessionRequest {
+    string store_uuid  = 1;
+    string table_uuid  = 2;
+}
+
+message GetServiceSessionRequest {
+    string store_uuid           = 1;
+    string service_session_uuid = 2;
+}
+
+message GetActiveSessionByTableRequest {
+    string store_uuid = 1;
+    string table_uuid = 2;
+  }
+  
+message GetActiveSessionByTableResponse {
+    ServiceSession service_session = 1;
+  }
+
+message ListServiceSessionsRequest {
+    string store_uuid = 1; // Required: Store ID
+    optional string table_uuid = 2; // Optional: Filter by table
+    optional SERVICESESSIONSTATUS service_session_status = 3; // Optional: Filter by session status
+    optional google.protobuf.Timestamp from_time = 4; // Optional: Filter sessions created after this timestamp
+    optional int32 limit = 5; // Optional: Max results per page
+    optional int32 page = 6; // Optional: Page number
+}
+  
+message ListServiceSessionsResponse {
+    repeated ServiceSession sessions = 1;
+    int32 next_page = 2;
+    int32 prev_page = 3;
+}
+
+message UpdateServiceSessionRequest {
+    string store_uuid           = 1;
+    string service_session_uuid = 2;
+    optional SERVICESESSIONSTATUS service_status = 3;
+    optional google.protobuf.Timestamp ended_at   = 4;
+}
+
+message ValidateSessionRequest {
+    string store_uuid = 1;
+    string service_session_uuid = 2;
+}
+
+message ValidateSessionResponse{
+    bool  valid = 1;
+    string message = 2;
+    repeated string cart_uuids =3;
 }
 
 message CreateCartRequest{
@@ -460,3 +647,5 @@ message GetCouponUsageResponse{
     int32 next_page = 2;
     int32 prev_page = 3;
 }
+
+
