@@ -226,6 +226,7 @@ message ServiceSession {
     google.protobuf.Timestamp started_at = 3;
     google.protobuf.Timestamp ended_at = 4;
     SERVICESESSIONSTATUS service_status = 5;
+    string phone_number = 6;
 }
 
 message Cart{
@@ -257,6 +258,8 @@ message Cart{
     google.protobuf.Timestamp created_at = 18;
     google.protobuf.Timestamp updated_at = 19;
 
+    PAYMENTTYPE payment_type = 22; // Payment type for the cart, e.g., POSTPAID or PREPAID
+
 }
 
 message CartItem{
@@ -280,6 +283,7 @@ message CartItem{
     float packaging_cost = 14; //Price for Packaging if required
 
     repeated AddOn add_ons =15;
+
 }
 
 message AddOn{
@@ -384,14 +388,15 @@ message ValidateSessionResponse{
     repeated string cart_uuids =3;
 }
 
-message CreateCartRequest{
-    string store_uuid = 1;
-    string user_phone_no = 2;
-    ORDERTYPE order_type = 3;
-    string table_no = 4;
-    string vehicle_no = 5;
-    string vehicle_description = 6;
-}
+message CreateCartRequest {
+    string store_uuid = 1; // required
+    optional string user_phone_no = 2; // optional
+    ORDERTYPE order_type = 3; // required
+    optional string table_no = 4;
+    optional string vehicle_no = 5;
+    optional string vehicle_description = 6;
+  }
+  
 
 message CartResponse{
     Cart cart = 1;
@@ -399,28 +404,23 @@ message CartResponse{
 
 message GetCartRequest{
 
-    string store_uuid = 1;
-    string user_phone_no =2;
-    string cart_uuid =3;
+    string cart_uuid =1;
 
 }
 
 message UpdateCartRequest{
-    string store_uuid = 1;
-    string user_phone_no = 2;
-    string cart_uuid = 3;
+    string cart_uuid = 1;
     optional ORDERTYPE order_type = 4;
     optional string table_no = 5;
     optional string vehicle_no = 6;
     optional string vehicle_description = 7;
     optional string coupon_code = 8;
     optional string special_instructions = 9;
+    optional string user_phone_no = 10; // Optional: User phone number for customer-side requests
 }
 
 message DeleteCartRequest{
-    string store_uuid = 1;
-    string user_phone_no = 2;
-    string cart_uuid = 3;
+    string cart_uuid = 1;
 }
 
 message  AddCartItemRequest{
